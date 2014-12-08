@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{835AB5E0-CDA0-474B-AC33-F0D9808EDD53}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TNL.NET</RootNamespace>
+    <AssemblyName>TNL.NET</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data\Enums.cs" />
+    <Compile Include="Entities\AsymmetricKey.cs" />
+    <Compile Include="Entities\BaseObject.cs" />
+    <Compile Include="Entities\Certificate.cs" />
+    <Compile Include="Entities\EventConnection.cs" />
+    <Compile Include="Entities\GhostConnection.cs" />
+    <Compile Include="Entities\NetConnection.cs" />
+    <Compile Include="Entities\NetEvent.cs" />
+    <Compile Include="Entities\NetInterface.cs" />
+    <Compile Include="Entities\NetObject.cs" />
+    <Compile Include="Entities\NetObjectRPCEvent.cs" />
+    <Compile Include="Entities\RPCEvent.cs" />
+    <Compile Include="Entities\SymmetricCipher.cs" />
+    <Compile Include="Huffman\HuffmanTree.cs" />
+    <Compile Include="Huffman\Node.cs" />
+    <Compile Include="Interfaces\INetObject.cs" />
+    <Compile Include="Network\TNLSocket.cs" />
+    <Compile Include="Notify\EventPacketNotify.cs" />
+    <Compile Include="Notify\GhostPacketNotify.cs" />
+    <Compile Include="Specific\NotOriginalImplementationAttribute.cs" />
+    <Compile Include="Structs\ClientPuzzleManager.cs" />
+    <Compile Include="Structs\ConnectionParameters.cs" />
+    <Compile Include="Structs\ConnectionStringTable.cs" />
+    <Compile Include="Structs\Functor.cs" />
+    <Compile Include="Structs\FunctorDecl.cs" />
+    <Compile Include="Structs\GhostInfo.cs" />
+    <Compile Include="Structs\NetRate.cs" />
+    <Compile Include="Structs\Nonce.cs" />
+    <Compile Include="Notify\PacketNotify.cs" />
+    <Compile Include="Structs\Point3F.cs" />
+    <Compile Include="Structs\ReflectedReader.cs" />
+    <Compile Include="Structs\StringTable.cs" />
+    <Compile Include="Structs\StringTableEntry.cs" />
+    <Compile Include="Types\NetClassRep.cs" />
+    <Compile Include="Types\NetClassRepInstance.cs" />
+    <Compile Include="Types\NetConnectionRep.cs" />
+    <Compile Include="Structs\BitSet.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\BitStream.cs" />
+    <Compile Include="Utils\ByteBuffer.cs" />
+    <Compile Include="Utils\Extensions.cs" />
+    <Compile Include="Utils\PacketStream.cs" />
+    <Compile Include="Utils\RandomUtil.cs" />
+    <Compile Include="Utils\Utils.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
