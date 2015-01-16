@@ -22,10 +22,7 @@ namespace TNL.NET.Utils
 
         public static UInt32 GetNextBinLog2(UInt32 number)
         {
-            var ret = Math.Floor(Math.Log(number, 2));
-            var ret2 = GetBinLog2(number) + (IsPow2(number) ? 0U : 1U);
-
-            return ret2;
+            return GetBinLog2(number) + (IsPow2(number) ? 0U : 1U);
         }
 
         public static UInt32 GetNextPow2(UInt32 value)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace TNL.NET.Types
 {
@@ -19,9 +18,6 @@ namespace TNL.NET.Types
                 ClassId[i] = 0U;
 
             ClassList.Add(this);
-
-            using (var sw = new StreamWriter("reps.txt", true))
-                sw.WriteLine("Registered \"{0,-51}\"! Type: {1,2} | GroupMask: {2,3} | Version: {3}", className, (Int32)classType, groupMask, classVersion);
         }
 
         public override BaseObject Create()

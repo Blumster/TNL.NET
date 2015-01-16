@@ -689,14 +689,14 @@ namespace TNL.NET.Utils
 
         private void WriteHuffBuffer(Byte off, Byte maxlen)
         {
-            HuffmanTree.Build();
-
             if (StringBuffer[off] == 0)
             {
                 WriteFlag(false);
                 WriteInt(0, 8);
                 return;
             }
+
+            HuffmanTree.Build();
 
             var len = Strlen(StringBuffer, off);
             if (len > maxlen)
@@ -1009,7 +1009,7 @@ namespace TNL.NET.Utils
 
         private static Boolean Memcmp(Byte[] a, UInt32 offsetA, Byte[] b, UInt32 offsetB, UInt32 length)
         {
-            for (var i = 0; i < length; ++i)
+            for (var i = 0U; i < length; ++i)
                 if (a[offsetA + i] != b[offsetB + i])
                     return false;
 

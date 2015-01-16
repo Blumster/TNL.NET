@@ -11,7 +11,7 @@
 
     public enum NetClassGroup
     {
-        NetClassGroupGame,
+        NetClassGroupGame = 0,
         NetClassGroupCommunity,
         NetClassGroupMaster,
         NetClassGroupUnused2,

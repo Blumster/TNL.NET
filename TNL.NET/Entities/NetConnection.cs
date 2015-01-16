@@ -372,11 +372,11 @@ namespace TNL.NET.Entities
 
                 stream.SetStringTable(StringTable);
 
-                Console.WriteLine("NetConnection {0}: START {1}", NetAddress, GetClassName());
+                //Console.WriteLine("NetConnection {0}: START {1}", NetAddress, GetClassName());
 
                 WritePacket(stream, note);
 
-                Console.WriteLine("NetConnection {0}: END {1} - {2} bits", NetAddress, GetClassName(), stream.GetBitPosition() - start);
+                //Console.WriteLine("NetConnection {0}: END {1} - {2} bits", NetAddress, GetClassName(), stream.GetBitPosition() - start);
             }
 
             if (SymmetricCipher == null)
@@ -500,7 +500,6 @@ namespace TNL.NET.Entities
                 var ackMaskWord = (highestAck - notifyIndex) >> 5;
 
                 var packetTransmitSuccess = (ackMask[ackMaskWord] & (1U << (Int32) ackMaskBit)) != 0U;
-                Console.WriteLine("Ack {0} {1}", notifyIndex, packetTransmitSuccess);
 
                 HighestAckedSendTime = 0;
                 HandleNotify(notifyIndex, packetTransmitSuccess);
@@ -589,7 +588,7 @@ namespace TNL.NET.Entities
 
         protected void HandleNotify(UInt32 sequence, Boolean recvd)
         {
-            Console.WriteLine("NetConnection {0}: NOTIFY {1} {2}", NetAddress, sequence, recvd ? "RECVD" : "DROPPED");
+            //Console.WriteLine("NetConnection {0}: NOTIFY {1} {2}", NetAddress, sequence, recvd ? "RECVD" : "DROPPED");
 
             var note = NotifyQueueHead;
             NotifyQueueHead = NotifyQueueHead.NextPacket;

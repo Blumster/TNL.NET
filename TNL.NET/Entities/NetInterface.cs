@@ -409,8 +409,6 @@ namespace TNL.NET.Entities
 
         protected void SendConnectChallengeRequest(NetConnection conn)
         {
-            Console.WriteLine("Sending Connect Challenge Request to {0}", conn.GetNetAddress());
-
             var stream = new PacketStream();
 
             stream.Write((Byte) PacketType.ConnectChallengeRequest);
@@ -429,8 +427,6 @@ namespace TNL.NET.Entities
 
         protected void HandleConnectChallengeRequest(IPEndPoint addr, BitStream stream)
         {
-            Console.WriteLine("Received Connect Challenge Request from {0}", addr);
-
             if (!AllowConnections)
                 return;
 
@@ -461,8 +457,6 @@ namespace TNL.NET.Entities
             if (stream.WriteFlag(RequiresKeyExchange || (wantsKeyExchange && PrivateKey != null)))
                 stream.Write(stream.WriteFlag(wantsCertificate && Certificate != null) ? Certificate : PrivateKey.GetPublicKey());
 // ReSharper restore PossibleNullReferenceException
-
-            Console.WriteLine("Received Challenge Response: {0:X8}", identityToken);
 
             stream.SendTo(Socket, addr);
         }
@@ -515,8 +509,6 @@ namespace TNL.NET.Entities
                 cParams.UsingCrypto = true;
             }
 
-            Console.WriteLine("Received Challenge Response: {0:X8}", cParams.ClientIdentity);
-
             conn.ConnectionState = NetConnectionState.ComputingPuzzleSolution;
             conn.ConnectSendCount = 0;
 
@@ -533,8 +525,6 @@ namespace TNL.NET.Entities
             if (!ClientPuzzleManager.SolvePuzzle(ref cParams.PuzzleSolution, cParams.Nonce, cParams.ServerNonce, cParams.PuzzleDifficulty, cParams.ClientIdentity))
                 return;
 
-            Console.WriteLine("Client puzzle solved in {0} ms.", Environment.TickCount - conn.ConnectLastSendTime);
-
             conn.ConnectionState = NetConnectionState.AwaitingConnectResponse;
 
             SendConnectRequest(conn);
@@ -542,8 +532,6 @@ namespace TNL.NET.Entities
 
         protected void SendConnectRequest(NetConnection conn)
         {
-            Console.WriteLine("Sending Connect Request");
-
             var stream = new PacketStream();
             var cParams = conn.GetConnectionParameters();
 
@@ -651,8 +639,6 @@ namespace TNL.NET.Entities
             UInt32 connectSequence;
             stream.Read(out connectSequence);
 
-            Console.WriteLine("Received Connect Request {0:X8}", cParams.ClientIdentity);
-
             if (connect != null)
                 Disconnect(connect, TerminationReason.ReasonSelfDisconnect, "NewConnection");
 
@@ -688,8 +674,6 @@ namespace TNL.NET.Entities
 
         protected void SendConnectAccept(NetConnection conn)
         {
-            Console.WriteLine("Sending Connect Accept - connection established.");
-
             var stream = new PacketStream();
 
             stream.Write((Byte) PacketType.ConnectAccept);
@@ -770,8 +754,6 @@ namespace TNL.NET.Entities
 
             conn.ConnectionState = NetConnectionState.Connected;
             conn.OnConnectionEstablished();
-
-            Console.WriteLine("Received Connect Accept - connection established.");
         }
 
         protected void SendConnectReject(ConnectionParameters conn, IPEndPoint address, String reason)
@@ -809,8 +791,6 @@ namespace TNL.NET.Entities
 
             String reason;
             stream.ReadString(out reason);
-
-            Console.WriteLine("Received Connect Reject - reason: {0}", reason);
 
             if (reason == "Puzzle")
             {
@@ -981,8 +961,6 @@ namespace TNL.NET.Entities
 
         protected void SendArrangedConnectRequest(NetConnection conn)
         {
-            Console.WriteLine("Sending Arranged Connect Request");
-
             var stream = new PacketStream();
 
             stream.Write((Byte) PacketType.ArrangedConnectRequest);
@@ -1108,8 +1086,6 @@ namespace TNL.NET.Entities
             cParams.DebugObjectSizes = reader.ReadFlag();
             UInt32 connectSequence;
             reader.Read(out connectSequence);
-
-            Console.WriteLine("Received Arranged Connect Request");
 
             if (oldConnection != null)
                 Disconnect(oldConnection, TerminationReason.ReasonSelfDisconnect, "");

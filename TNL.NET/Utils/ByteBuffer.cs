@@ -10,7 +10,6 @@ namespace TNL.NET.Utils
 
         protected Byte[] Data;
         protected UInt32 BufSize;
-        protected Boolean OwnsMemory;
 
         public ByteBuffer(Byte[] data, UInt32 bufferSize)
         {
