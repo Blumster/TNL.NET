@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 
@@ -75,9 +74,6 @@ namespace TNL.NET.Network
         {
             try
             {
-                using (var sw = new StreamWriter(@"C:\ki-raw-uj-" + DateTime.Now.Minute + "-" + DateTime.Now.Second + "-" + DateTime.Now.Millisecond + ".txt"))
-                    sw.Write(BitConverter.ToString(buffer, 0, (Int32) bufferSize));
-
                 _listener.BeginSend(buffer, (Int32) bufferSize, iep, OnEndSend, null);
 
                 return NetError.NoError;
