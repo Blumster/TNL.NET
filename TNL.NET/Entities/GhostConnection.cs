@@ -98,9 +98,9 @@ namespace TNL.NET.Entities
                 for (var walk = packRef.UpdateChain; walk != null && updateFlags > 0; walk = walk.UpdateChain)
                     updateFlags &= ~walk.Mask;
 
-                if (updateFlags > 0)
+                if (updateFlags > 0UL)
                 {
-                    if (packRef.Ghost.UpdateMask == 0)
+                    if (packRef.Ghost.UpdateMask == 0UL)
                     {
                         packRef.Ghost.UpdateMask = updateFlags;
                         GhostPushNonZero(packRef.Ghost);
@@ -112,12 +112,12 @@ namespace TNL.NET.Entities
                 if (packRef.Ghost.LastUpdateChain == packRef)
                     packRef.Ghost.LastUpdateChain = null;
 
-                if ((packRef.GhostInfoFlags & (UInt32) GhostInfoFlags.Ghosting) != 0)
+                if ((packRef.GhostInfoFlags & (UInt32) GhostInfoFlags.Ghosting) != 0U)
                 {
                     packRef.Ghost.Flags |= (UInt32) GhostInfoFlags.NotYetGhosted;
                     packRef.Ghost.Flags &= ~(UInt32) GhostInfoFlags.Ghosting;
                 }
-                else if ((packRef.GhostInfoFlags & (UInt32)GhostInfoFlags.KillingGhost) != 0)
+                else if ((packRef.GhostInfoFlags & (UInt32)GhostInfoFlags.KillingGhost) != 0U)
                 {
                     packRef.Ghost.Flags |= (UInt32) GhostInfoFlags.KillGhost;
                     packRef.Ghost.Flags &= ~(UInt32) GhostInfoFlags.KillingGhost;
@@ -144,13 +144,14 @@ namespace TNL.NET.Entities
 
                 var temp = packRef.NextRef;
 
-                if ((packRef.GhostInfoFlags & (UInt32) GhostInfoFlags.Ghosting) != 0)
+                if ((packRef.GhostInfoFlags & (UInt32) GhostInfoFlags.Ghosting) != 0U)
                 {
                     packRef.Ghost.Flags &= ~(UInt32) GhostInfoFlags.Ghosting;
+
                     if (packRef.Ghost.Obj != null)
                         packRef.Ghost.Obj.OnGhostAvailable(this);
                 }
-                else if ((packRef.GhostInfoFlags & (UInt32) GhostInfoFlags.KillingGhost) != 0)
+                else if ((packRef.GhostInfoFlags & (UInt32) GhostInfoFlags.KillingGhost) != 0U)
                     FreeGhostInfo(packRef.Ghost);
 
                 packRef = temp;
@@ -209,16 +210,16 @@ namespace TNL.NET.Entities
                 if (walk.Index > maxIndex)
                     maxIndex = walk.Index;
 
-                if ((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0 &&
-                    (walk.Flags & (UInt32) GhostInfoFlags.NotYetGhosted) != 0)
+                if ((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0U &&
+                    (walk.Flags & (UInt32) GhostInfoFlags.NotYetGhosted) != 0U)
                 {
                     FreeGhostInfo(walk);
                     continue;
                 }
 
-                if ((walk.Flags & (UInt32) (GhostInfoFlags.KillGhost | GhostInfoFlags.Ghosting)) == 0)
+                if ((walk.Flags & (UInt32) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting)) == 0U)
                 {
-                    if ((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0)
+                    if ((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0U)
                         walk.Priority = 10000.0f;
                     else
                         walk.Priority = walk.Obj.GetUpdatePriority(ScopeObject, walk.UpdateMask, (Int32) walk.UpdateSkipCount);
@@ -238,7 +239,7 @@ namespace TNL.NET.Entities
             for (var i = 0; i < list.Count; ++i)
             {
                 GhostArray[i] = list[i];
-                GhostArray[i].Index = (UInt32) i;
+                GhostArray[i].ArrayIndex = i;
             }
 
             var sendSize = 1;
@@ -251,12 +252,10 @@ namespace TNL.NET.Entities
 
             stream.WriteInt((UInt32) sendSize - 3U, 3);
 
-            var count = 0U;
-
             for (var i = GhostZeroUpdateIndex - 1; i >= 0 && !stream.IsFull(); --i)
             {
                 var walk = GhostArray[i];
-                if ((walk.Flags & (UInt32) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting)) != 0)
+                if ((walk.Flags & (UInt32) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting)) != 0U)
                     continue;
 
                 var updateStart = stream.GetBitPosition();
@@ -266,14 +265,14 @@ namespace TNL.NET.Entities
                 stream.WriteFlag(true);
                 stream.WriteInt(walk.Index, (Byte) sendSize);
 
-                if (!stream.WriteFlag((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0))
+                if (!stream.WriteFlag((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0U))
                 {
                     if (ConnectionParameters.DebugObjectSizes)
                         stream.AdvanceBitPosition(BitStreamPosBitSize);
 
                     var startPos = stream.GetBitPosition();
 
-                    if ((walk.Flags & (UInt32) GhostInfoFlags.NotYetGhosted) != 0)
+                    if ((walk.Flags & (UInt32) GhostInfoFlags.NotYetGhosted) != 0U)
                     {
                         var classId = walk.Obj.GetClassId(GetNetClassGroup());
                         stream.WriteClassId(classId, (UInt32) NetClassType.NetClassTypeObject, (UInt32) GetNetClassGroup());
@@ -301,8 +300,11 @@ namespace TNL.NET.Entities
                     break;
                 }
 
-                var upd = new GhostRef();
-                upd.NextRef = updateList;
+                var upd = new GhostRef
+                {
+                    NextRef = updateList
+                };
+
                 updateList = upd;
 
                 if (walk.LastUpdateChain != null)
@@ -314,7 +316,7 @@ namespace TNL.NET.Entities
                 upd.GhostInfoFlags = 0U;
                 upd.UpdateChain = null;
 
-                if ((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0)
+                if ((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0U)
                 {
                     walk.Flags &= ~(UInt32) GhostInfoFlags.KillGhost;
                     walk.Flags |= (UInt32) GhostInfoFlags.KillingGhost;
@@ -325,7 +327,7 @@ namespace TNL.NET.Entities
                 }
                 else
                 {
-                    if ((walk.Flags & (UInt32) GhostInfoFlags.NotYetGhosted) != 0)
+                    if ((walk.Flags & (UInt32) GhostInfoFlags.NotYetGhosted) != 0U)
                     {
                         walk.Flags &= ~(UInt32) GhostInfoFlags.NotYetGhosted;
                         walk.Flags |= (UInt32) GhostInfoFlags.Ghosting;
@@ -333,12 +335,11 @@ namespace TNL.NET.Entities
                     }
 
                     walk.UpdateMask = retMask;
-                    if (retMask == 0)
+                    if (retMask == 0UL)
                         GhostPushToZero(walk);
 
                     upd.Mask = updateMask & ~retMask;
-                    walk.UpdateSkipCount = 0;
-                    ++count;
+                    walk.UpdateSkipCount = 0U;
                 }
             }
 
@@ -366,7 +367,8 @@ namespace TNL.NET.Entities
 
             while (stream.ReadFlag())
             {
-                var index = stream.ReadInt((Byte)idSize);
+                var index = stream.ReadInt((Byte) idSize);
+
                 if (stream.ReadFlag())
                 {
                     if (LocalGhosts[index] != null)
@@ -427,9 +429,7 @@ namespace TNL.NET.Entities
                         }
                     }
                     else
-                    {
                         LocalGhosts[index].UnpackUpdate(this, stream);
-                    }
 
                     if (ConnectionParameters.DebugObjectSizes)
                         Console.WriteLine("Assert({0} == {1} || unpackUpdate did not match packUpdate for object of class {0}. Expected {1} bits, got {2} bits.", LocalGhosts[index].GetClassName(), endPos, stream.GetBitPosition());
@@ -597,23 +597,23 @@ namespace TNL.NET.Entities
             if (GhostFreeIndex == MaxGhostCount)
                 return;
 
-            var giptr = GhostArray[GhostFreeIndex];
-            GhostPushFreeToZero(giptr);
-            giptr.UpdateMask = 0xFFFFFFFFFFFFFFFFUL;
-            GhostPushNonZero(giptr);
+            var gi = GhostArray[GhostFreeIndex];
+            GhostPushFreeToZero(gi);
+            gi.UpdateMask = 0xFFFFFFFFFFFFFFFFUL;
+            GhostPushNonZero(gi);
 
-            giptr.Flags = (UInt32) (GhostInfoFlags.NotYetGhosted | GhostInfoFlags.InScope);
-            giptr.Obj = obj;
-            giptr.LastUpdateChain = null;
-            giptr.UpdateSkipCount = 0;
-            giptr.Connection = this;
-            giptr.NextObjectRef = obj.GetFirstObjectRef();
+            gi.Flags = (UInt32) (GhostInfoFlags.NotYetGhosted | GhostInfoFlags.InScope);
+            gi.Obj = obj;
+            gi.LastUpdateChain = null;
+            gi.UpdateSkipCount = 0U;
+            gi.Connection = this;
+            gi.NextObjectRef = obj.GetFirstObjectRef();
 
-            if (giptr.NextObjectRef != null)
-                obj.GetFirstObjectRef().PrevObjectRef = giptr;
+            if (obj.GetFirstObjectRef() != null)
+                obj.GetFirstObjectRef().PrevObjectRef = gi;
 
-            giptr.PrevObjectRef = null;
-            obj.SetFirstObjectRef(giptr);
+            gi.PrevObjectRef = null;
+            obj.SetFirstObjectRef(gi);
         }
 
         public void ObjectLocalScopeAlways(NetObject obj)
@@ -718,7 +718,7 @@ namespace TNL.NET.Entities
                 return (Int32) obj.GetNetIndex();
 
             for (var i = 0; i < MaxGhostCount; ++i)
-                if (GhostArray[i] != null && GhostArray[i].Obj == obj && (GhostArray[i].Flags & (UInt32) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting | GhostInfoFlags.NotYetGhosted | GhostInfoFlags.KillGhost)) == 0)
+                if (GhostArray[i] != null && GhostArray[i].Obj == obj && (GhostArray[i].Flags & (UInt32) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting | GhostInfoFlags.NotYetGhosted | GhostInfoFlags.KillGhost)) == 0U)
                     return (Int32) GhostArray[i].Index;
 
             return -1;
@@ -770,7 +770,7 @@ namespace TNL.NET.Entities
         {
             info.Flags |= (UInt32) GhostInfoFlags.KillGhost;
 
-            if (info.UpdateMask == 0)
+            if (info.UpdateMask == 0UL)
             {
                 info.UpdateMask = 0xFFFFFFFFFFFFFFFFUL;
                 GhostPushNonZero(info);
@@ -805,6 +805,7 @@ namespace TNL.NET.Entities
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
         public void rpcStartGhosting(UInt32 sequence)
+        #region rpcStartGhosting
         {
             var rpcEvent = new RPCStartGhosting();
             rpcEvent.Functor.Set(new Object[] { sequence });
@@ -813,6 +814,7 @@ namespace TNL.NET.Entities
         }
 
         private void rpcStartGhosting_remote(UInt32 sequence)
+        #endregion
         {
             if (!DoesGhostTo())
             {
@@ -825,6 +827,7 @@ namespace TNL.NET.Entities
         }
 
         public void rpcReadyForNormalGhosts(UInt32 sequence)
+        #region rpcReadyForNormalGhosts
         {
             var rpcEvent = new RPCReadyForNormalGhosts();
             rpcEvent.Functor.Set(new Object[] { sequence });
@@ -833,6 +836,7 @@ namespace TNL.NET.Entities
         }
 
         private void rpcReadyForNormalGhosts_remote(UInt32 sequence)
+        #endregion
         {
             if (!DoesGhostFrom())
             {
@@ -847,6 +851,7 @@ namespace TNL.NET.Entities
         }
 
         public void rpcEndGhosting()
+        #region rpcEndGhosting
         {
             var rpcEvent = new RPCEndGhosting();
             rpcEvent.Functor.Set(new Object[] { });
@@ -855,6 +860,7 @@ namespace TNL.NET.Entities
         }
 
         private void rpcEndGhosting_remote()
+        #endregion
         {
             if (!DoesGhostTo())
             {

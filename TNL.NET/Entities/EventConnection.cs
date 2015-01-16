@@ -102,53 +102,50 @@ namespace TNL.NET.Entities
 
             var walk = notify.EventList;
             var insertList = _sendEventQueueHead;
+            var insertListPrev = _sendEventQueueHead;
 
             while (walk != null)
             {
+                var temp = walk.NextEvent;
+
                 switch (walk.Event.GuaranteeType)
                 {
                     case GuaranteeType.GuaranteedOrdered:
-                        Console.WriteLine("EventConnection {0}: DroppedGuaranteed - {1}", GetNetAddressString(), walk.SeqCount);
-
-                        EventNote insertListPrev = null;
-
                         while (insertList != null && insertList.SeqCount < walk.SeqCount)
                         {
                             insertListPrev = insertList;
                             insertList = insertList.NextEvent;
                         }
 
-                        if (insertList == null || insertListPrev == null)
-                            continue;
+                        walk.NextEvent = insertList;
 
-                        var temp = walk.NextEvent;
-                        walk.NextEvent = insertList.NextEvent;
-                        if (walk.NextEvent != null)
+                        if (walk.NextEvent == null)
                             _sendEventQueueTail = walk;
 
-                        insertListPrev.NextEvent = walk;
+                        if (insertListPrev == null)
+                            _sendEventQueueHead = walk;
+                        else
+                            insertListPrev.NextEvent = walk;
 
+                        insertListPrev = walk;
                         insertList = walk.NextEvent;
-                        walk = temp;
                         break;
 
                     case GuaranteeType.Guaranteed:
-                        var temp1 = walk.NextEvent;
                         walk.NextEvent = _unorderedSendEventQueueHead;
                         _unorderedSendEventQueueHead = walk;
-                        if (walk.NextEvent != null)
+
+                        if (walk.NextEvent == null)
                             _unorderedSendEventQueueTail = walk;
 
-                        walk = temp1;
                         break;
 
                     case GuaranteeType.Unguaranteed:
                         walk.Event.NotifyDelivered(this, false);
-                        var temp2 = walk.NextEvent;
-                        walk = temp2;
                         break;
                 }
 
+                walk = temp;
                 ++NumEventsWaiting;
             }
         }
@@ -168,32 +165,29 @@ namespace TNL.NET.Entities
             while (walk != null)
             {
                 var next = walk.NextEvent;
+
                 if (walk.Event.GuaranteeType != GuaranteeType.GuaranteedOrdered)
-                {
                     walk.Event.NotifyDelivered(this, true);
-                    walk = next;
-                }
                 else
                 {
-                    if (noteList == null)
-                        _notifyEventList = walk;
-                    else
+                    while (noteList != null && noteList.SeqCount < walk.SeqCount)
                     {
-                        while (noteList != null && noteList.SeqCount < walk.SeqCount)
-                        {
-                            noteListPrev = noteList;
-                            noteList = noteList.NextEvent;
-                        }
-
-                        walk.NextEvent = noteList;
-                        noteListPrev.NextEvent = walk;
+                        noteListPrev = noteList;
+                        noteList = noteList.NextEvent;
                     }
 
-                    noteList = walk;
-                    noteListPrev = walk;
+                    walk.NextEvent = noteList;
 
-                    walk = next;
+                    if (noteListPrev == null)
+                        _notifyEventList = walk;
+                    else
+                        noteListPrev.NextEvent = walk;
+
+                    noteListPrev = walk;
+                    noteList = walk.NextEvent;
                 }
+
+                walk = next;
             }
 
             while (_notifyEventList != null && _notifyEventList.SeqCount == _lastAckedEventSeq + 1)
@@ -201,7 +195,7 @@ namespace TNL.NET.Entities
                 ++_lastAckedEventSeq;
                 var next = _notifyEventList.NextEvent;
 
-                Console.WriteLine("EventConnection {0}: NotifyDelivered - {1}", GetNetAddressString(), _notifyEventList.SeqCount);
+                //Console.WriteLine("EventConnection {0}: NotifyDelivered - {1}", GetNetAddressString(), _notifyEventList.SeqCount);
 
                 _notifyEventList.Event.NotifyDelivered(this, true);
 
@@ -266,7 +260,7 @@ namespace TNL.NET.Entities
             }
 
             stream.WriteFlag(false);
-            const Int32 prevSeq = -2;
+            var prevSeq = -2;
 
             while (_sendEventQueueHead != null)
             {
@@ -279,10 +273,15 @@ namespace TNL.NET.Entities
                 var ev = _sendEventQueueHead;
                 var eventStart = stream.GetBitPosition();
 
-                stream.WriteFlag(false);
+                stream.WriteFlag(true);
 
                 if (!stream.WriteFlag(ev.SeqCount == prevSeq + 1))
                     stream.WriteInt((UInt32) ev.SeqCount, 7);
+
+                prevSeq = ev.SeqCount;
+
+                if (ConnectionParameters.DebugObjectSizes)
+                    stream.AdvanceBitPosition(BitStreamPosBitSize);
 
                 var start = stream.GetBitPosition();
 
@@ -414,22 +413,21 @@ namespace TNL.NET.Entities
                     NextEvent = null
                 };
 
-                if (waitInsert == null)
-                    _waitSeqEvents = note;
-                else
+                while (waitInsert != null && waitInsert.SeqCount < seq)
                 {
-                    while (waitInsert != null && waitInsert.SeqCount < seq)
-                    {
-                        waitInsertPrev = waitInsert;
-                        waitInsert = waitInsert.NextEvent;
-                    }
-
-                    note.NextEvent = waitInsert;
-                    waitInsertPrev.NextEvent = note;
+                    waitInsertPrev = waitInsert;
+                    waitInsert = waitInsert.NextEvent;
                 }
 
+                note.NextEvent = waitInsert;
+
+                if (waitInsertPrev == null)
+                    _waitSeqEvents = note;
+                else
+                    waitInsertPrev.NextEvent = note;
+
                 waitInsertPrev = note;
-                waitInsert = note;
+                waitInsert = note.NextEvent;
             }
 
             while (_waitSeqEvents != null && _waitSeqEvents.SeqCount == _nextRecvEventSeq)
@@ -522,6 +520,8 @@ namespace TNL.NET.Entities
             var classId = theEvent.GetClassId(GetNetClassGroup());
             if (classId >= EventClassCount && GetConnectionState() == NetConnectionState.Connected)
                 return false;
+
+            theEvent.NotifyPosted(this);
 
             var ev = new EventNote
             {
