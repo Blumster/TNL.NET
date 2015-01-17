@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace TNL.NET.Structs
@@ -8,15 +10,22 @@ namespace TNL.NET.Structs
 
     public class FunctorDecl<T> : Functor where T : EventConnection
     {
-        public MethodInfo Method;
+        public Delegate MethodDelegate;
         public Object[] Parameters;
+        public Object[] Arguments;
         public Type[] ParamTypes;
 
         public FunctorDecl(String methodName, Type[] paramTypes)
         {
-            Method = typeof(T).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            var tType = typeof(T);
+
+            var method = tType.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
             ParamTypes = paramTypes;
-            Parameters = new Object[ParamTypes.Length];
+
+            var list = paramTypes.ToList();
+            list.Insert(0, tType);
+
+            MethodDelegate = Delegate.CreateDelegate(Expression.GetActionType(list.ToArray()), method);
         }
 
         public override void Set(Object[] parameters)
@@ -26,24 +35,30 @@ namespace TNL.NET.Structs
 
         public override void Read(BitStream stream)
         {
+            Arguments = new Object[ParamTypes.Length + 1];
+
             for (var i = 0; i < ParamTypes.Length; ++i)
-                Parameters[i] = ReflectedReader.Read(stream, ParamTypes[i]);
+                Arguments[1 + i] = ReflectedReader.Read(stream, ParamTypes[i]);
         }
 
         public override void Write(BitStream stream)
         {
+            if (Parameters == null)
+                return;
+
             foreach (var t in Parameters)
                 ReflectedReader.Write(stream, t, t.GetType());
         }
 
         public override void Dispatch(Object obj)
         {
-            if (Method == null || Parameters == null || obj == null || (obj as T) == null)
+            if (MethodDelegate == null || Arguments == null || obj == null || (obj as T) == null)
                 return;
 
             try
             {
-                Method.Invoke(obj, Parameters);
+                Arguments[0] = obj;
+                MethodDelegate.DynamicInvoke(Arguments);
             }
             catch
             {

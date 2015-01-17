@@ -96,8 +96,9 @@ namespace TNL.NET.Entities
 
         public void Close()
         {
-            while (_connectionList.Count > 0)
-                Disconnect(_connectionList[0], TerminationReason.ReasonSelfDisconnect, "Shutdown");
+            lock (_connectionList)
+                while (_connectionList.Count > 0)
+                    Disconnect(_connectionList[0], TerminationReason.ReasonSelfDisconnect, "Shutdown");
 
         }
 
@@ -200,14 +201,16 @@ namespace TNL.NET.Entities
         {
             Connections.Remove(conn.GetNetAddress());
 
-            _connectionList.Remove(conn);
+            lock (_connectionList)
+                _connectionList.Remove(conn);
         }
 
         public virtual void AddConnection(NetConnection conn)
         {
             Connections.Add(conn.GetNetAddress(), conn);
 
-            _connectionList.Add(conn);
+            lock (_connectionList)
+                _connectionList.Add(conn);
         }
 
         public void ProcessConnections()
@@ -226,8 +229,10 @@ namespace TNL.NET.Entities
             }
 
             NetObject.CollapseDirtyList();
-            foreach (var conn in _connectionList)
-                conn.CheckPacketSend(false, CurrentTime);
+
+            lock (_connectionList)
+                foreach (var conn in _connectionList)
+                    conn.CheckPacketSend(false, CurrentTime);
 
             if (CurrentTime > LastTimeoutCheckTime + TimeoutCheckInterval)
             {
@@ -295,14 +300,17 @@ namespace TNL.NET.Entities
 
                 LastTimeoutCheckTime = CurrentTime;
 
-                foreach (var conn in _connectionList)
+                lock (_connectionList)
                 {
-                    if (conn.CheckTimeout(CurrentTime))
+                    foreach (var conn in _connectionList)
                     {
-                        conn.ConnectionState = NetConnectionState.TimedOut;
-                        conn.OnConnectTerminated(TerminationReason.ReasonTimedOut, "Timeout");
+                        if (conn.CheckTimeout(CurrentTime))
+                        {
+                            conn.ConnectionState = NetConnectionState.TimedOut;
+                            conn.OnConnectTerminated(TerminationReason.ReasonTimedOut, "Timeout");
 
-                        RemoveConnection(conn);
+                            RemoveConnection(conn);
+                        }
                     }
                 }
             }
@@ -382,11 +390,6 @@ namespace TNL.NET.Entities
 
         public virtual void HandleInfoPacket(IPEndPoint address, byte packetType, BitStream reader)
         {
-        }
-
-        public List<NetConnection> GetConnectionList()
-        {
-            return _connectionList;
         }
 
         public Int32 GetCurrentTime()
