@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace TNL.NET.Network
 {
@@ -18,14 +20,19 @@ namespace TNL.NET.Network
         public const UInt32 MaxPacketDataSize = 1490;
 
         private Boolean _needRun;
-        private readonly UdpClient _listener;
+        private readonly UdpClient _socket;
 
-        public Queue<Tuple<IPEndPoint, Byte[]>> PacketsToBeHandled = new Queue<Tuple<IPEndPoint, Byte[]>>(); 
+        public Queue<Tuple<IPEndPoint, Byte[]>> PacketsToBeHandled = new Queue<Tuple<IPEndPoint, Byte[]>>();
+
+        public TNLSocket()
+        {
+            _socket = new UdpClient();
+        }
 
         public TNLSocket(Int32 port)
         {
-            _listener = new UdpClient(port);
-            _listener.BeginReceive(OnEndReceive, null);
+            _socket = new UdpClient(port);
+            _socket.BeginReceive(OnEndReceive, null);
 
             _needRun = true;
         }
@@ -36,10 +43,18 @@ namespace TNL.NET.Network
             {
                 var ep = new IPEndPoint(0, 0);
 
-                var buff = _listener.EndReceive(result, ref ep);
+                var buff = _socket.EndReceive(result, ref ep);
 
                 if (buff != null && buff.Length > 0)
+                {
                     PacketsToBeHandled.Enqueue(new Tuple<IPEndPoint, Byte[]>(ep, buff));
+
+                    using (var sw = new StreamWriter("received.txt", true, Encoding.UTF8))
+                    {
+                        sw.WriteLine(BitConverter.ToString(buff));
+                        sw.WriteLine();
+                    }
+                }
             }
             catch (ObjectDisposedException)
             {
@@ -56,13 +71,12 @@ namespace TNL.NET.Network
             }
             catch (Exception e)
             {
-                
                 Console.WriteLine("Valami hiba (fogadás)!");
                 Console.WriteLine(e);
             }
 
-            if (_needRun && _listener != null)
-                _listener.BeginReceive(OnEndReceive, null);
+            if (_needRun && _socket != null)
+                _socket.BeginReceive(OnEndReceive, null);
         }
 
         public void Stop()
@@ -72,9 +86,15 @@ namespace TNL.NET.Network
 
         public NetError Send(IPEndPoint iep, Byte[] buffer, UInt32 bufferSize)
         {
+            using (var sw = new StreamWriter("sent-processed.txt", true, Encoding.UTF8))
+            {
+                sw.WriteLine(BitConverter.ToString(buffer, 0, (Int32) bufferSize));
+                sw.WriteLine();
+            }
+
             try
             {
-                _listener.BeginSend(buffer, (Int32) bufferSize, iep, OnEndSend, null);
+                _socket.BeginSend(buffer, (Int32) bufferSize, iep, OnEndSend, null);
 
                 return NetError.NoError;
             }
@@ -88,13 +108,21 @@ namespace TNL.NET.Network
         {
             try
             {
-                _listener.EndSend(result);
+                _socket.EndSend(result);
             }
             catch
             {
                 Console.WriteLine("Valami hiba (küldés)!");
             }
 
+        }
+
+        public void Connect(IPEndPoint ep)
+        {
+            _socket.Connect(ep);
+            _socket.BeginReceive(OnEndReceive, null);
+
+            _needRun = true;
         }
     }
 }

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security;
-using TNL.NET.Notify;
-using TNL.NET.Utils;
 
 namespace TNL.NET.Entities
 {
     using Data;
+    using Notify;
     using Structs;
     using Types;
+    using Utils;
 
     public class GhostRef
     {
@@ -86,7 +85,7 @@ namespace TNL.NET.Entities
 
             var notify = note as GhostPacketNotify;
             if (notify == null)
-                return;
+                throw new ArgumentException("Note must be GhostPacketNotify", "note");
 
             var packRef = notify.GhostList;
             while (packRef != null)
@@ -95,10 +94,10 @@ namespace TNL.NET.Entities
 
                 var updateFlags = packRef.Mask;
 
-                for (var walk = packRef.UpdateChain; walk != null && updateFlags > 0; walk = walk.UpdateChain)
+                for (var walk = packRef.UpdateChain; walk != null && updateFlags != 0UL; walk = walk.UpdateChain)
                     updateFlags &= ~walk.Mask;
 
-                if (updateFlags > 0UL)
+                if (updateFlags != 0UL)
                 {
                     if (packRef.Ghost.UpdateMask == 0UL)
                     {
@@ -133,7 +132,7 @@ namespace TNL.NET.Entities
 
             var notify = note as GhostPacketNotify;
             if (notify == null)
-                return;
+                throw new ArgumentException("Note must be GhostPacketNotify", "note");
 
             var packRef = notify.GhostList;
 
@@ -184,7 +183,7 @@ namespace TNL.NET.Entities
 
             var notify = note as GhostPacketNotify;
             if (notify == null)
-                return;
+                throw new ArgumentException("Note must be GhostPacketNotify", "note");
 
             if (ConnectionParameters.DebugObjectSizes)
                 stream.WriteInt(DebugCheckSum, 32);
@@ -218,12 +217,7 @@ namespace TNL.NET.Entities
                 }
 
                 if ((walk.Flags & (UInt32) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting)) == 0U)
-                {
-                    if ((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0U)
-                        walk.Priority = 10000.0f;
-                    else
-                        walk.Priority = walk.Obj.GetUpdatePriority(ScopeObject, walk.UpdateMask, (Int32) walk.UpdateSkipCount);
-                }
+                    walk.Priority = (walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0U ? 10000.0f : walk.Obj.GetUpdatePriority(ScopeObject, walk.UpdateMask, (Int32) walk.UpdateSkipCount);
                 else
                     walk.Priority = 0.0f;
             }
@@ -244,7 +238,7 @@ namespace TNL.NET.Entities
 
             var sendSize = 1;
 
-            while ((maxIndex >>= 1) > 0)
+            while ((maxIndex >>= 1) != 0)
                 ++sendSize;
 
             if (sendSize < 3)
@@ -386,7 +380,7 @@ namespace TNL.NET.Entities
                     if (LocalGhosts[index] == null)
                     {
                         var classId = stream.ReadClassId((UInt32) NetClassType.NetClassTypeObject, (UInt32) GetNetClassGroup());
-                        if (classId == -1)
+                        if (classId == 0xFFFFFFFFU)
                         {
                             SetLastError("Invalid packet.");
                             return;
@@ -451,7 +445,7 @@ namespace TNL.NET.Entities
             {
                 var note = walk as GhostPacketNotify;
                 if (note == null)
-                    continue;
+                    throw new Exception("Note must be GhostPacketNotify");
 
                 var delWalk = note.GhostList;
                 note.GhostList = null;
@@ -569,6 +563,10 @@ namespace TNL.NET.Entities
 
         public void SetScopeObject(NetObject obj)
         {
+            if (ScopeObject == obj)
+                return;
+
+            obj.SetOwningConnection(this);
             ScopeObject = obj;
         }
 
@@ -844,10 +842,8 @@ namespace TNL.NET.Entities
                 return;
             }
 
-            if (sequence != GhostingSequence)
-                return;
-
-            Ghosting = true;
+            if (sequence == GhostingSequence)
+                Ghosting = true;
         }
 
         public void rpcEndGhosting()

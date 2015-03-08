@@ -29,10 +29,10 @@ namespace TNL.NET.Entities
 
     public enum NetPacketType
     {
-        DataPacket,
-        PingPacket,
-        AckPacket,
-        InvalidPacketType
+        DataPacket        = 0,
+        PingPacket        = 1,
+        AckPacket         = 2,
+        InvalidPacketType = 3
     }
 
     [Flags]
@@ -112,7 +112,6 @@ namespace TNL.NET.Entities
         private UInt32 SendDelayCredit { get; set; }
         private Int32 SimulatedLatency { get; set; }
         private Single SimulatedPacketLoss { get; set; }
-        private NetRate LocalRate { get; set; }
         private NetRate RemoteRate { get; set; }
         private Boolean LocalRateChanged { get; set; }
         protected UInt32 CurrentPacketSendSize { get; set; } // Custom
@@ -127,6 +126,7 @@ namespace TNL.NET.Entities
         protected PacketNotify NotifyQueueTail { get; set; }
         protected NetConnection RemoteConnection { get; set; }
         protected ConnectionParameters ConnectionParameters { get; set; }
+        protected NetRate LocalRate { get; set; }
 
         public Int32 ConnectSendCount { get; set; }
         public Int32 ConnectLastSendTime { get; set; }
@@ -306,10 +306,7 @@ namespace TNL.NET.Entities
         public void ReadRawPacket(BitStream stream)
         {
             if (SimulatedPacketLoss > 0.0f && RandomUtil.ReadF() < SimulatedPacketLoss)
-            {
-                Console.WriteLine("NetConnection {0}: RECVDROP - {1}", NetAddress, GetLastSendSequence());
                 return;
-            }
 
             ErrorBuffer[0] = '\0';
 
@@ -570,7 +567,7 @@ namespace TNL.NET.Entities
 
         protected void SendPingPacket()
         {
-            var stream = new BitStream();
+            var stream = new PacketStream();
 
             WriteRawPacket(stream, NetPacketType.PingPacket);
 
@@ -579,7 +576,7 @@ namespace TNL.NET.Entities
 
         protected void SendAckPacket()
         {
-            var stream = new BitStream();
+            var stream = new PacketStream();
 
             WriteRawPacket(stream, NetPacketType.AckPacket);
 
@@ -605,7 +602,7 @@ namespace TNL.NET.Entities
                     if (Cwnd < SSThresh)
                         ++Cwnd;
                     else if (Cwnd < MaxPacketWindowSize - 2.0f)
-                        Cwnd += 1 / Cwnd;
+                        Cwnd += 1.0f / Cwnd;
                 }
 
                 PacketReceived(note);
@@ -673,7 +670,7 @@ namespace TNL.NET.Entities
             var server = co as NetConnection;
             String error = null;
 
-            var stream = new BitStream();
+            var stream = new PacketStream();
 
             if (server == null)
                 return false;
@@ -683,7 +680,7 @@ namespace TNL.NET.Entities
             client.ConnectionParameters.IsLocal = true;
             server.ConnectionParameters.IsLocal = true;
 
-            server.SetInterface(connectionInterface);
+            server.SetInterface(serverInterface);
 
             server.SetInitialRecvSequence(client.GetInitialSendSequence());
             client.SetInitialRecvSequence(server.GetInitialSendSequence());
@@ -965,7 +962,7 @@ namespace TNL.NET.Entities
 
             if (WindowFull() || !IsDataToTransmit())
             {
-                if (!IsAdaptive())
+                if (IsAdaptive())
                 {
                     var ackDelta = (LastSeqRecvd - LastSeqRecvdAck);
                     var ack = ackDelta / 4.0f;
@@ -973,7 +970,7 @@ namespace TNL.NET.Entities
                     var deltaT = (curTime - LastAckTime);
                     ack = ack * deltaT / 200.0f;
 
-                    if ((ack > 1.0f || (ackDelta > (0.75f * MaxPacketWindowSize))) && (LastSeqRecvdAck != LastSeqRecvd))
+                    if ((ack > 1.0f || (ackDelta > (0.75f * MaxPacketWindowSize))) && LastSeqRecvdAck != LastSeqRecvd)
                     {
                         LastSeqRecvdAck = LastSeqRecvd;
                         LastAckTime = curTime;
@@ -985,7 +982,7 @@ namespace TNL.NET.Entities
                 return;
             }
 
-            var stream = new BitStream();
+            var stream = new PacketStream(CurrentPacketSendSize);
 
             LastUpdateTime = curTime;
 

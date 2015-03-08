@@ -98,7 +98,7 @@ namespace TNL.NET.Entities
 
             var notify = note as EventPacketNotify;
             if (notify == null)
-                return;
+                throw new ArgumentException("Note must be EventPacketNotify", "note");
 
             var walk = notify.EventList;
             var insertList = _sendEventQueueHead;
@@ -156,7 +156,7 @@ namespace TNL.NET.Entities
 
             var notify = note as EventPacketNotify;
             if (notify == null)
-                return;
+                throw new ArgumentException("Note must be EventPacketNotify", "note");
 
             var walk = notify.EventList;
             var noteList = _notifyEventList;
@@ -195,8 +195,6 @@ namespace TNL.NET.Entities
                 ++_lastAckedEventSeq;
                 var next = _notifyEventList.NextEvent;
 
-                //Console.WriteLine("EventConnection {0}: NotifyDelivered - {1}", GetNetAddressString(), _notifyEventList.SeqCount);
-
                 _notifyEventList.Event.NotifyDelivered(this, true);
 
                 _notifyEventList = next;
@@ -209,7 +207,7 @@ namespace TNL.NET.Entities
 
             var notify = note as EventPacketNotify;
             if (notify == null)
-                return;
+                throw new ArgumentException("Note must be EventPacketNotify", "note");
 
             if (ConnectionParameters.DebugObjectSizes)
                 stream.WriteInt(DebugCheckSum, 32);
@@ -352,7 +350,7 @@ namespace TNL.NET.Entities
                 if (!ungaranteedPhase)
                 {
                     if (stream.ReadFlag())
-                        seq = (prevSeq + 1) & 0x7;
+                        seq = (prevSeq + 1) & 0x7F;
                     else
                         seq = (Int32) stream.ReadInt(7);
 
