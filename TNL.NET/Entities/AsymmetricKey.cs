@@ -1,5 +1,4 @@
 ﻿using System;
-using System.CodeDom.Compiler;
 using System.Security.Cryptography;
 
 namespace TNL.NET.Entities
@@ -16,7 +15,7 @@ namespace TNL.NET.Entities
     {
         public const UInt32 StaticCryptoBufferSize = 2048U;
 
-        private static Byte[] _staticCryptoBuffer = new byte[StaticCryptoBufferSize];
+        private static readonly Byte[] StaticCryptoBuffer = new byte[StaticCryptoBufferSize];
 
         private Byte[] KeyData { get; set; }
         private UInt32 KeySize { get; set; }
@@ -93,7 +92,7 @@ namespace TNL.NET.Entities
 
             throw new NotImplementedException();
 
-            var hash = new SHA256Managed().ComputeHash(_staticCryptoBuffer, 0, (Int32) StaticCryptoBufferSize);
+            var hash = new SHA256Managed().ComputeHash(StaticCryptoBuffer, 0, (Int32) StaticCryptoBufferSize);
 
             return new ByteBuffer(hash, 32);
         }
@@ -105,24 +104,20 @@ namespace TNL.NET.Entities
 
         public ByteBuffer HashAndSign(ByteBuffer theByteBuffer)
         {
-            var hash = new SHA256Managed().ComputeHash(theByteBuffer.GetBuffer(), 0, (Int32)theByteBuffer.GetBufferSize());
-
-            var outLen = StaticCryptoBufferSize;
-
             throw new NotImplementedException();
 
-            return new ByteBuffer(_staticCryptoBuffer, outLen);
+            var hash = new SHA256Managed().ComputeHash(theByteBuffer.GetBuffer(), 0, (Int32)theByteBuffer.GetBufferSize());
+
+            return new ByteBuffer(StaticCryptoBuffer, StaticCryptoBufferSize);
         }
 
         public bool VerifySignature(ByteBuffer theByteBuffer, ByteBuffer theSignature)
         {
-            var hash = new SHA256Managed().ComputeHash(theByteBuffer.GetBuffer(), 0, (Int32) theByteBuffer.GetBufferSize());
-
-            var stat = 0;
-
             throw new NotImplementedException();
 
-            return stat != 0;
+            var hash = new SHA256Managed().ComputeHash(theByteBuffer.GetBuffer(), 0, (Int32) theByteBuffer.GetBufferSize());
+
+            return false;
         }
     }
 }

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace TNL.NET.Network
 {
@@ -46,32 +44,25 @@ namespace TNL.NET.Network
                 var buff = _socket.EndReceive(result, ref ep);
 
                 if (buff != null && buff.Length > 0)
-                {
                     PacketsToBeHandled.Enqueue(new Tuple<IPEndPoint, Byte[]>(ep, buff));
-
-                    using (var sw = new StreamWriter("received.txt", true, Encoding.UTF8))
-                    {
-                        sw.WriteLine(BitConverter.ToString(buff));
-                        sw.WriteLine();
-                    }
-                }
             }
             catch (ObjectDisposedException)
             {
-                Console.WriteLine("Socket closed, stopping Receiving!");
-                return;
+                Console.WriteLine("Socket closed, stop listening!");
+
+                Stop();
             }
             catch (SocketException se)
             {
                 if (se.SocketErrorCode != SocketError.ConnectionReset)
                 {
-                    Console.WriteLine("Valami hiba (fogadás)!");
+                    Console.WriteLine("Unknown error (receive)!");
                     Console.WriteLine(se);
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine("Valami hiba (fogadás)!");
+                Console.WriteLine("Unknown error (receive)!");
                 Console.WriteLine(e);
             }
 
@@ -86,12 +77,6 @@ namespace TNL.NET.Network
 
         public NetError Send(IPEndPoint iep, Byte[] buffer, UInt32 bufferSize)
         {
-            using (var sw = new StreamWriter("sent-processed.txt", true, Encoding.UTF8))
-            {
-                sw.WriteLine(BitConverter.ToString(buffer, 0, (Int32) bufferSize));
-                sw.WriteLine();
-            }
-
             try
             {
                 _socket.BeginSend(buffer, (Int32) bufferSize, iep, OnEndSend, null);
@@ -110,11 +95,11 @@ namespace TNL.NET.Network
             {
                 _socket.EndSend(result);
             }
-            catch
+            catch (Exception e)
             {
-                Console.WriteLine("Valami hiba (küldés)!");
+                Console.WriteLine("Unknown error (send)!");
+                Console.WriteLine(e);
             }
-
         }
 
         public void Connect(IPEndPoint ep)

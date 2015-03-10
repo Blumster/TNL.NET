@@ -175,7 +175,10 @@ namespace TNL.NET.Entities
             RemoteRate = LocalRate;
             ConnectLastSendTime = 0;
             LocalRateChanged = true;
+
+// ReSharper disable DoNotCallOverridableMethodsInConstructor
             ComputeNegotiatedRate();
+// ReSharper restore DoNotCallOverridableMethodsInConstructor
 
             PingSendCount = 0;
             LastPingSendTime = 0;
@@ -365,7 +368,7 @@ namespace TNL.NET.Entities
 
                 WritePacketRateInfo(stream, note);
 
-                var start = stream.GetBitPosition();
+                //var start = stream.GetBitPosition();
 
                 stream.SetStringTable(StringTable);
 
@@ -1048,7 +1051,7 @@ namespace TNL.NET.Entities
 
         public static void ImplementNetConnection<T>(out NetClassRepInstance<T> rep, out NetConnectionRep connRep, Boolean canRemoteCreate) where T : BaseObject, new()
         {
-            ImplementClass<T>(out rep);
+            ImplementClass(out rep);
 
             connRep = new NetConnectionRep(rep, canRemoteCreate);
         }

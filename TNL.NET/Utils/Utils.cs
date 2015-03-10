@@ -12,7 +12,7 @@ namespace TNL.NET.Utils
         public static UInt32 GetBinLog2(UInt32 value)
         {
             var floatValue = (Single) value;
-            var ret = Math.Floor(Math.Log(value, 2));
+            //var ret = Math.Floor(Math.Log(value, 2));
 
             unsafe
             {
