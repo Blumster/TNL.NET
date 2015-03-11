@@ -236,6 +236,8 @@ namespace TNL.NET.Entities
 
             if (CurrentTime > LastTimeoutCheckTime + TimeoutCheckInterval)
             {
+                var removeList = new List<NetConnection>();
+
                 foreach (var pair in PendingConnections)
                 {
                     var pending = pair.Value;
@@ -248,7 +250,7 @@ namespace TNL.NET.Entities
                             pending.ConnectionState = NetConnectionState.ConnectTimedOut;
                             pending.OnConnectTerminated(TerminationReason.ReasonTimedOut, "Timeout");
 
-                            RemovePendingConnection(pending);
+                            removeList.Add(pending);
 
                             continue;
                         }
@@ -263,7 +265,7 @@ namespace TNL.NET.Entities
                             pending.ConnectionState = NetConnectionState.ConnectTimedOut;
                             pending.OnConnectTerminated(TerminationReason.ReasonTimedOut, "Timeout");
 
-                            RemovePendingConnection(pending);
+                            removeList.Add(pending);
 
                             continue;
                         }
@@ -281,7 +283,7 @@ namespace TNL.NET.Entities
                             pending.ConnectionState = NetConnectionState.ConnectTimedOut;
                             pending.OnConnectTerminated(TerminationReason.ReasonTimedOut, "Timeout");
 
-                            RemovePendingConnection(pending);
+                            removeList.Add(pending);
 
                             continue;
                         }
@@ -294,10 +296,15 @@ namespace TNL.NET.Entities
                         pending.ConnectionState = NetConnectionState.ConnectTimedOut;
                         pending.OnConnectTerminated(TerminationReason.ReasonTimedOut, "Timeout");
 
-                        RemovePendingConnection(pending);
+                        removeList.Add(pending);
                     }
                 }
 
+                foreach (var conn in removeList)
+                    RemovePendingConnection(conn);
+
+                removeList.Clear();
+                
                 LastTimeoutCheckTime = CurrentTime;
 
                 lock (_connectionList)
@@ -309,10 +316,13 @@ namespace TNL.NET.Entities
                             conn.ConnectionState = NetConnectionState.TimedOut;
                             conn.OnConnectTerminated(TerminationReason.ReasonTimedOut, "Timeout");
 
-                            RemoveConnection(conn);
+                            removeList.Add(conn);
                         }
                     }
                 }
+
+                foreach (var conn in removeList)
+                    RemoveConnection(conn);
             }
 
             foreach (var pair in PendingConnections.Where(pair => pair.Value.ConnectionState == NetConnectionState.ComputingPuzzleSolution))

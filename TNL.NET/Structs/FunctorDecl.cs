@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -60,9 +61,10 @@ namespace TNL.NET.Structs
                 Arguments[0] = obj;
                 MethodDelegate.DynamicInvoke(Arguments);
             }
-            catch
+            catch (Exception e)
             {
                 Console.WriteLine("Invalid type?? Expected: {0} | Found: {1}", typeof(T).Name, obj.GetType().Name);
+                Console.WriteLine(e);
             }
         }
     }
