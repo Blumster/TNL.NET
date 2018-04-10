@@ -1,6 +1,6 @@
-/*.user
-/*.suo
-/TNL.NET/bin/Debug
-/TNL.NET/bin/Release
-/TNL.NET/obj/Debug
-/TNL.NET/obj/Release
+*.user
+*.suo
+/TNL.NET/bin
+/TNL.NET/obj
+
+/.vs
