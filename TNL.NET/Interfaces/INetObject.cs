@@ -1,4 +1,4 @@
-﻿namespace TNL.NET.Interfaces
+﻿namespace TNL.Interfaces
 {
     using Types;
 

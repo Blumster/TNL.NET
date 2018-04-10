@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TNL.NET", "TNL.NET\TNL.NET.csproj", "{835AB5E0-CDA0-474B-AC33-F0D9808EDD53}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TNL.NET", "TNL.NET\TNL.NET.csproj", "{91E15D24-5C49-4D36-87D4-D9B7B8BB4272}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,16 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{835AB5E0-CDA0-474B-AC33-F0D9808EDD53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{835AB5E0-CDA0-474B-AC33-F0D9808EDD53}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{835AB5E0-CDA0-474B-AC33-F0D9808EDD53}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{835AB5E0-CDA0-474B-AC33-F0D9808EDD53}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0AFD516E-3BB3-48EA-8E8E-EAABC2E1AAE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0AFD516E-3BB3-48EA-8E8E-EAABC2E1AAE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0AFD516E-3BB3-48EA-8E8E-EAABC2E1AAE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0AFD516E-3BB3-48EA-8E8E-EAABC2E1AAE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91E15D24-5C49-4D36-87D4-D9B7B8BB4272}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91E15D24-5C49-4D36-87D4-D9B7B8BB4272}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91E15D24-5C49-4D36-87D4-D9B7B8BB4272}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91E15D24-5C49-4D36-87D4-D9B7B8BB4272}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {88B475AF-F0E5-437E-8D67-5E22E60C99D5}
 	EndGlobalSection
 EndGlobal

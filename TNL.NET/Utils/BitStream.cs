@@ -1,73 +1,72 @@
 ﻿using System;
-using System.Security.Cryptography;
 using System.Text;
+using System.Security.Cryptography;
 
-namespace TNL.NET.Utils
+namespace TNL.Utils
 {
     using Entities;
-    using Huffman;
-    using Structs;
+    using Structures;
     using Types;
 
     public class BitStream : ByteBuffer
     {
         #region Consts
-        public const Single FloatOne = 1.0f;
-        public const Single FloatHalf = 0.5f;
-        public const Single FloatZero = 0.0f;
+        public const float FloatOne = 1.0f;
+        public const float FloatHalf = 0.5f;
+        public const float FloatZero = 0.0f;
 
-        public const Single FloatPi = (Single) Math.PI;
-        public const Single Float2Pi = 2.0f * FloatPi;
-        public const Single FloatInversePi = 1.0f / FloatPi;
-        public const Single FloatHalfPi = 0.5f * FloatPi;
-        public const Single Float2InversePi = 2.0f / FloatPi;
-        public const Single FloatInverse2Pi = 0.5f / FloatPi;
+        public const float FloatPi = (float) Math.PI;
+        public const float Float2Pi = 2.0f * FloatPi;
+        public const float FloatInversePi = 1.0f / FloatPi;
+        public const float FloatHalfPi = 0.5f * FloatPi;
+        public const float Float2InversePi = 2.0f / FloatPi;
+        public const float FloatInverse2Pi = 0.5f / FloatPi;
 
-        public const Single FloatSqrt2 = 1.41421356237309504880f;
-        public const Single FloatSqrtHalf = 0.7071067811865475244008443f;
+        public const float FloatSqrt2 = 1.41421356237309504880f;
+        public const float FloatSqrtHalf = 0.7071067811865475244008443f;
 
-        public static readonly Byte[] BitCounts = { 16, 18, 20, 32 };
+        public static readonly byte[] BitCounts = { 16, 18, 20, 32 };
 
         #endregion
 
-        public const UInt32 ResizePad = 1500U;
+        public const uint ResizePad = 1500U;
 
-        protected UInt32 BitNum;
-        protected Boolean Error;
-        protected Boolean CompressRelative;
+        protected uint BitNum;
+        protected bool Error;
+        protected bool CompressRelative;
         protected Point3F CompressPoint;
-        protected UInt32 MaxReadBitNum;
+        protected uint MaxReadBitNum;
 
-        public UInt32 MaxWriteBitNum;
+        public uint MaxWriteBitNum;
 
-        protected Byte[] CurrentByte;
+        protected byte[] CurrentByte;
         protected ConnectionStringTable StringTable;
-        protected readonly Byte[] StringBuffer = new Byte[256];
+        protected readonly byte[] StringBuffer = new byte[256];
 
-        public BitStream(Byte[] data, UInt32 bufSize)
+        public BitStream(byte[] data, uint bufSize)
             : base(data, bufSize)
         {
             SetMaxSizes(bufSize, bufSize);
             Reset();
-            CurrentByte = new Byte[1];
+            CurrentByte = new byte[1];
         }
 
-        public BitStream(Byte[] data, UInt32 bufSize, UInt32 maxWriteSize)
+        public BitStream(byte[] data, uint bufSize, uint maxWriteSize)
             : base(data, bufSize)
         {
             SetMaxSizes(bufSize, maxWriteSize);
             Reset();
-            CurrentByte = new Byte[1];
+            CurrentByte = new byte[1];
         }
 
         public BitStream()
         {
             SetMaxSizes(GetBufferSize(), GetBufferSize());
             Reset();
-            CurrentByte = new Byte[1];
+            CurrentByte = new byte[1];
         }
 
-        protected Boolean ResizeBits(UInt32 newBitsNeeded)
+        protected bool ResizeBits(uint newBitsNeeded)
         {
             var newSize = ((MaxWriteBitNum + newBitsNeeded + 7) >> 3) + ResizePad;
             if (!Resize(newSize))
@@ -81,13 +80,13 @@ namespace TNL.NET.Utils
             return true;
         }
 
-        public void SetMaxSizes(UInt32 maxReadSize, UInt32 maxWriteSize)
+        public void SetMaxSizes(uint maxReadSize, uint maxWriteSize)
         {
             MaxReadBitNum = maxReadSize << 3;
             MaxWriteBitNum = maxWriteSize << 3;
         }
 
-        public void SetMaxBitSizes(UInt32 maxReadBitSize, UInt32 maxWriteBitSize)
+        public void SetMaxBitSizes(uint maxReadBitSize, uint maxWriteBitSize)
         {
             MaxReadBitNum = maxReadBitSize;
             MaxWriteBitNum = maxWriteBitSize;
@@ -117,37 +116,37 @@ namespace TNL.NET.Utils
             Error = false;
         }
 
-        public UInt32 GetBytePosition()
+        public uint GetBytePosition()
         {
             return (BitNum + 7) >> 3;
         }
 
-        public UInt32 GetBitPosition()
+        public uint GetBitPosition()
         {
             return BitNum;
         }
 
-        public void SetBytePosition(UInt32 newPosition)
+        public void SetBytePosition(uint newPosition)
         {
             BitNum = newPosition << 3;
         }
 
-        public void SetBitPosition(UInt32 newBitPosition)
+        public void SetBitPosition(uint newBitPosition)
         {
             BitNum = newBitPosition;
         }
 
-        public void AdvanceBitPosition(UInt32 numBits)
+        public void AdvanceBitPosition(uint numBits)
         {
             SetBitPosition(GetBitPosition() + numBits);
         }
 
-        public UInt32 GetMaxReadBitPosition()
+        public uint GetMaxReadBitPosition()
         {
             return MaxReadBitNum;
         }
 
-        public UInt32 GetBitSpaceAvailable()
+        public uint GetBitSpaceAvailable()
         {
             return MaxWriteBitNum - BitNum;
         }
@@ -155,17 +154,17 @@ namespace TNL.NET.Utils
         public void ZeroToByteBoundary()
         {
             if ((BitNum & 0x7) != 0)
-                WriteInt(0, (Byte) (8 - (BitNum & 0x7)));
+                WriteInt(0, (byte) (8 - (BitNum & 0x7)));
         }
 
-        public void WriteInt(UInt32 value, Byte bitCount)
+        public void WriteInt(uint value, byte bitCount)
         {
             WriteBits(bitCount, BitConverter.GetBytes(value));
         }
 
-        public UInt32 ReadInt(Byte bitCount)
+        public uint ReadInt(byte bitCount)
         {
-            var bits = new Byte[4];
+            var bits = new byte[4];
 
             ReadBits(bitCount, bits);
 
@@ -179,7 +178,7 @@ namespace TNL.NET.Utils
             return ret;
         }
 
-        public void WriteIntAt(UInt32 value, Byte bitCount, UInt32 bitPosition)
+        public void WriteIntAt(uint value, byte bitCount, uint bitPosition)
         {
             var curPos = GetBitPosition();
 
@@ -190,125 +189,125 @@ namespace TNL.NET.Utils
             SetBitPosition(curPos);
         }
 
-        public void WriteSignedInt(Int32 value, Byte bitCount)
+        public void WriteSignedInt(int value, byte bitCount)
         {
             if (WriteFlag(value < 0))
-                WriteInt((UInt32) (-value), (Byte) (bitCount - 1));
+                WriteInt((uint) (-value), (byte) (bitCount - 1));
             else
-                WriteInt((UInt32) value, (Byte) (bitCount - 1));
+                WriteInt((uint) value, (byte) (bitCount - 1));
         }
 
-        public Int32 ReadSignedInt(Byte bitCount)
+        public int ReadSignedInt(byte bitCount)
         {
             if (ReadFlag())
-                return -(Int32) ReadInt((Byte) (bitCount - 1));
-            
-            return (Int32) ReadInt((Byte) (bitCount - 1));
+                return -(int) ReadInt((byte) (bitCount - 1));
+
+            return (int) ReadInt((byte) (bitCount - 1));
         }
 
-        public void WriteRangedU32(UInt32 value, UInt32 rangeStart, UInt32 rangeEnd)
+        public void WriteRangedU32(uint value, uint rangeStart, uint rangeEnd)
         {
             var rangeSize = rangeEnd - rangeStart + 1;
             var rangeBits = Utils.GetNextBinLog2(rangeSize);
 
-            WriteInt(value - rangeStart, (Byte) rangeBits);
+            WriteInt(value - rangeStart, (byte) rangeBits);
         }
 
-        public UInt32 ReadRangedU32(UInt32 rangeStart, UInt32 rangeEnd)
+        public uint ReadRangedU32(uint rangeStart, uint rangeEnd)
         {
             var rangeSize = rangeEnd - rangeStart + 1;
             var rangeBits = Utils.GetNextBinLog2(rangeSize);
 
-            return ReadInt((Byte) rangeBits) + rangeStart;
+            return ReadInt((byte) rangeBits) + rangeStart;
         }
 
-        public void WriteEnum(UInt32 enumValue, UInt32 enumRange)
+        public void WriteEnum(uint enumValue, uint enumRange)
         {
-            WriteInt(enumValue, (Byte) Utils.GetNextBinLog2(enumRange));
+            WriteInt(enumValue, (byte) Utils.GetNextBinLog2(enumRange));
         }
 
-        public UInt32 ReadEnum(UInt32 enumRange)
+        public uint ReadEnum(uint enumRange)
         {
-            return ReadInt((Byte) Utils.GetNextBinLog2(enumRange));
+            return ReadInt((byte) Utils.GetNextBinLog2(enumRange));
         }
 
-        public void WriteFloat(Single f, Byte bitCount)
+        public void WriteFloat(float f, byte bitCount)
         {
-            WriteInt((UInt32) (f * ((1 << bitCount) - 1)), bitCount);
+            WriteInt((uint) (f * ((1 << bitCount) - 1)), bitCount);
         }
 
-        public Single ReadFloat(Byte bitCount)
+        public float ReadFloat(byte bitCount)
         {
-            return ReadInt(bitCount) / (Single) ((1 << bitCount) - 1);
+            return ReadInt(bitCount) / (float) ((1 << bitCount) - 1);
         }
 
-        public void WriteSignedFloat(Single f, Byte bitCount)
+        public void WriteSignedFloat(float f, byte bitCount)
         {
-            WriteSignedInt((Int32) (f * ((1 << (bitCount -1)) -1)), bitCount);
+            WriteSignedInt((int) (f * ((1 << (bitCount - 1)) - 1)), bitCount);
         }
 
-        public Single ReadSignedFloat(Byte bitCount)
+        public float ReadSignedFloat(byte bitCount)
         {
-            return ReadSignedInt(bitCount) / (Single) ((1 << (bitCount - 1)) - 1);
+            return ReadSignedInt(bitCount) / (float) ((1 << (bitCount - 1)) - 1);
         }
 
-        public void WriteClassId(UInt32 classId, UInt32 classType, UInt32 classGroup)
+        public void WriteClassId(uint classId, uint classType, uint classGroup)
         {
-            WriteInt(classId, (Byte) NetClassRep.GetNetClassBitSize(classGroup, classType));
+            WriteInt(classId, (byte) NetClassRep.GetNetClassBitSize(classGroup, classType));
         }
 
-        public UInt32 ReadClassId(UInt32 classType, UInt32 classGroup)
+        public uint ReadClassId(uint classType, uint classGroup)
         {
-            var ret = ReadInt((Byte) NetClassRep.GetNetClassBitSize(classGroup, classType));
+            var ret = ReadInt((byte) NetClassRep.GetNetClassBitSize(classGroup, classType));
             return ret >= NetClassRep.GetNetClassCount(classGroup, classType) ? 0xFFFFFFFFU : ret;
         }
 
-        public void WriteNormalVector(Point3F vec, Byte bitCount)
+        public void WriteNormalVector(Point3F vec, byte bitCount)
         {
-            var phi = (Single) (Math.Atan2(vec.X, vec.Y) * FloatInversePi);
-            var theta = (Single) (Math.Atan2(vec.Z, Math.Sqrt(vec.X * vec.X + vec.Y * vec.Y)) * Float2InversePi);
+            var phi = (float) (Math.Atan2(vec.X, vec.Y) * FloatInversePi);
+            var theta = (float) (Math.Atan2(vec.Z, Math.Sqrt(vec.X * vec.X + vec.Y * vec.Y)) * Float2InversePi);
 
-            WriteSignedFloat(phi, (Byte) (bitCount + 1));
+            WriteSignedFloat(phi, (byte) (bitCount + 1));
             WriteSignedFloat(theta, bitCount);
         }
 
-        public void ReadNormalVector(ref Point3F vec, Byte bitCount)
+        public void ReadNormalVector(ref Point3F vec, byte bitCount)
         {
-            var phi = ReadSignedFloat((Byte)(bitCount + 1)) * FloatPi;
+            var phi = ReadSignedFloat((byte) (bitCount + 1)) * FloatPi;
             var theta = ReadSignedFloat(bitCount) * FloatHalfPi;
 
-            vec.X = (Single) (Math.Sin(phi) * Math.Cos(theta));
-            vec.Y = (Single) (Math.Cos(phi) * Math.Cos(theta));
-            vec.Z = (Single) Math.Sin(theta);
+            vec.X = (float) (Math.Sin(phi) * Math.Cos(theta));
+            vec.Y = (float) (Math.Cos(phi) * Math.Cos(theta));
+            vec.Z = (float) Math.Sin(theta);
         }
 
-        public static Point3F DumbDownNormal(Point3F vec, Byte bitCount)
+        public static Point3F DumbDownNormal(Point3F vec, byte bitCount)
         {
-            var buffer = new Byte[128];
+            var buffer = new byte[128];
             var temp = new BitStream(buffer, 128U);
 
             temp.WriteNormalVector(vec, bitCount);
             temp.SetBitPosition(0U);
 
             var ret = new Point3F();
-            
+
             temp.ReadNormalVector(ref ret, bitCount);
 
             return ret;
         }
 
-        public void WriteNormalVector(Point3F vec, Byte angleBitCount, Byte zBitCount)
+        public void WriteNormalVector(Point3F vec, byte angleBitCount, byte zBitCount)
         {
             if (WriteFlag(Math.Abs(vec.Z) >= (1.0f - (1.0f / zBitCount))))
                 WriteFlag(vec.Z < 0.0f);
             else
             {
                 WriteSignedFloat(vec.Z, zBitCount);
-                WriteSignedFloat((Single) Math.Atan2(vec.X, vec.Y) * FloatInverse2Pi, angleBitCount);
+                WriteSignedFloat((float) Math.Atan2(vec.X, vec.Y) * FloatInverse2Pi, angleBitCount);
             }
         }
 
-        public void ReadNormalVector(ref Point3F vec, Byte angleBitCount, Byte zBitCount)
+        public void ReadNormalVector(ref Point3F vec, byte angleBitCount, byte zBitCount)
         {
             if (ReadFlag())
             {
@@ -322,9 +321,9 @@ namespace TNL.NET.Utils
 
                 var angle = Float2Pi * ReadSignedFloat(angleBitCount);
 
-                var mult = (Single) Math.Sqrt(1.0f - vec.Z * vec.Z);
-                vec.X = mult * (Single) Math.Cos(angle);
-                vec.X = mult * (Single) Math.Sin(angle);
+                var mult = (float) Math.Sqrt(1.0f - vec.Z * vec.Z);
+                vec.X = mult * (float) Math.Cos(angle);
+                vec.X = mult * (float) Math.Sin(angle);
             }
         }
 
@@ -339,12 +338,12 @@ namespace TNL.NET.Utils
             CompressRelative = false;
         }
 
-        public void WritePointCompressed(Point3F p, Single scale)
+        public void WritePointCompressed(Point3F p, float scale)
         {
             var vec = new Point3F();
 
             var invScale = 1.0f / scale;
-            UInt32 type;
+            uint type;
 
             if (CompressRelative)
             {
@@ -352,7 +351,7 @@ namespace TNL.NET.Utils
                 vec.Y = p.Y - CompressPoint.Y;
                 vec.Z = p.Z - CompressPoint.Z;
 
-                var dist = (Single) Math.Sqrt(vec.X * vec.X + vec.Y * vec.Y + vec.Z * vec.Z) * invScale;
+                var dist = (float) Math.Sqrt(vec.X * vec.X + vec.Y * vec.Y + vec.Z * vec.Z) * invScale;
 
                 if (dist < (1 << 15))
                     type = 0U;
@@ -372,9 +371,9 @@ namespace TNL.NET.Utils
             {
                 var size = BitCounts[type];
 
-                WriteSignedInt((Int32) (vec.X * invScale), size);
-                WriteSignedInt((Int32) (vec.Y * invScale), size);
-                WriteSignedInt((Int32) (vec.Z * invScale), size);
+                WriteSignedInt((int) (vec.X * invScale), size);
+                WriteSignedInt((int) (vec.Y * invScale), size);
+                WriteSignedInt((int) (vec.Z * invScale), size);
             }
             else
             {
@@ -384,16 +383,14 @@ namespace TNL.NET.Utils
             }
         }
 
-        public void ReadPointCompressed(ref Point3F p, Single scale)
+        public void ReadPointCompressed(ref Point3F p, float scale)
         {
             var type = ReadInt(2);
             if (type == 3)
             {
-                Single x, y, z;
-
-                Read(out x);
-                Read(out y);
-                Read(out z);
+                Read(out float x);
+                Read(out float y);
+                Read(out float z);
 
                 p.X = x;
                 p.Y = y;
@@ -413,7 +410,7 @@ namespace TNL.NET.Utils
             }
         }
 
-        public Boolean WriteBits(UInt32 bitCount, Byte[] bitPtr)
+        public bool WriteBits(uint bitCount, byte[] bitPtr)
         {
             if (bitCount == 0)
                 return true;
@@ -432,9 +429,9 @@ namespace TNL.NET.Utils
 
             if (downShift >= bitCount)
             {
-                var mask = ((1 << (Int32) bitCount) - 1) << (Int32) upShift;
+                var mask = ((1 << (int) bitCount) - 1) << (int) upShift;
 
-                destPtr[destOff] = (Byte) ((destPtr[destOff] & ~mask) | ((sourcePtr[sourceOff] << (Int32) upShift) & mask));
+                destPtr[destOff] = (byte) ((destPtr[destOff] & ~mask) | ((sourcePtr[sourceOff] << (int) upShift) & mask));
 
                 BitNum += bitCount;
                 return true;
@@ -449,16 +446,16 @@ namespace TNL.NET.Utils
 
                 if (bitCount > 0)
                 {
-                    var mask = (1 << (Int32) bitCount) - 1;
-                    destPtr[destOff] = (Byte) ((sourcePtr[sourceOff] & mask) | (destPtr[destOff] & ~mask));
+                    var mask = (1 << (int) bitCount) - 1;
+                    destPtr[destOff] = (byte) ((sourcePtr[sourceOff] & mask) | (destPtr[destOff] & ~mask));
                 }
 
                 return true;
             }
 
-            Byte sourceByte;
-            var destByte = (Byte) (destPtr[destOff] & (0xFF >> (Int32) downShift));
-            var lastMask = (Byte) (0xFF >> (Int32) (7 - ((BitNum + bitCount - 1) & 0x7)));
+            byte sourceByte;
+            var destByte = (byte) (destPtr[destOff] & (0xFF >> (int) downShift));
+            var lastMask = (byte) (0xFF >> (int) (7 - ((BitNum + bitCount - 1) & 0x7)));
 
             BitNum += bitCount;
 
@@ -466,31 +463,31 @@ namespace TNL.NET.Utils
             {
                 sourceByte = sourcePtr[sourceOff++];
 
-                destPtr[destOff++] = (Byte) (destByte | (sourceByte << (Int32) upShift));
+                destPtr[destOff++] = (byte) (destByte | (sourceByte << (int) upShift));
 
-                destByte = (Byte) (sourceByte >> (Int32) downShift);
+                destByte = (byte) (sourceByte >> (int) downShift);
             }
 
             if (bitCount == 0)
             {
-                destPtr[destOff] = (Byte) ((destPtr[destOff] & ~lastMask) | (destByte & lastMask));
+                destPtr[destOff] = (byte) ((destPtr[destOff] & ~lastMask) | (destByte & lastMask));
                 return true;
             }
 
             if (bitCount <= downShift)
             {
-                destPtr[destOff] = (Byte) ((destPtr[destOff] & ~lastMask) | ((destByte | (sourcePtr[sourceOff] << (Int32) upShift)) & lastMask));
+                destPtr[destOff] = (byte) ((destPtr[destOff] & ~lastMask) | ((destByte | (sourcePtr[sourceOff] << (int) upShift)) & lastMask));
                 return true;
             }
 
             sourceByte = sourcePtr[sourceOff];
 
-            destPtr[destOff++] = (Byte) (destByte | (sourceByte << (Int32) upShift));
-            destPtr[destOff] = (Byte) ((destPtr[destOff] & ~lastMask) | ((sourceByte >> (Int32) downShift) & lastMask));
+            destPtr[destOff++] = (byte) (destByte | (sourceByte << (int) upShift));
+            destPtr[destOff] = (byte) ((destPtr[destOff] & ~lastMask) | ((sourceByte >> (int) downShift) & lastMask));
             return true;
         }
 
-        public Boolean ReadBits(UInt32 bitCount, Byte[] bitPtr)
+        public bool ReadBits(uint bitCount, byte[] bitPtr)
         {
             if (bitCount == 0)
                 return true;
@@ -521,16 +518,16 @@ namespace TNL.NET.Utils
                 return true;
             }
 
-            var sourceByte = (Byte)(sourcePtr[sourceOff] >> (Int32) downShift);
+            var sourceByte = (byte) (sourcePtr[sourceOff] >> (int) downShift);
             BitNum += bitCount;
 
             for (; bitCount >= 8; bitCount -= 8)
             {
                 var nextByte = sourcePtr[++sourceOff];
 
-                destPtr[destOff++] = (Byte) (sourceByte | (nextByte << (Int32) upShift));
+                destPtr[destOff++] = (byte) (sourceByte | (nextByte << (int) upShift));
 
-                sourceByte = (Byte) (nextByte >> (Int32) downShift);
+                sourceByte = (byte) (nextByte >> (int) downShift);
             }
 
             if (bitCount > 0)
@@ -540,13 +537,13 @@ namespace TNL.NET.Utils
                     destPtr[destOff] = sourceByte;
                     return true;
                 }
-                destPtr[destOff] = (Byte) (sourceByte | (sourcePtr[++sourceOff] << (Int32) upShift));
+                destPtr[destOff] = (byte) (sourceByte | (sourcePtr[++sourceOff] << (int) upShift));
             }
 
             return true;
         }
 
-        public Boolean Write(ByteBuffer theBuffer)
+        public bool Write(ByteBuffer theBuffer)
         {
             var size = theBuffer.GetBufferSize();
             if (size > 1023)
@@ -556,7 +553,7 @@ namespace TNL.NET.Utils
             return Write(size, theBuffer.GetBuffer());
         }
 
-        public Boolean Read(ByteBuffer theBuffer)
+        public bool Read(ByteBuffer theBuffer)
         {
             var size = ReadInt(10);
 
@@ -565,21 +562,21 @@ namespace TNL.NET.Utils
             return Read(size, theBuffer.GetBuffer());
         }
 
-        public Boolean WriteFlag(Boolean flag)
+        public bool WriteFlag(bool flag)
         {
             if (BitNum + 1 > MaxWriteBitNum && !ResizeBits(1))
                 return false;
 
             if (flag)
-                Data[BitNum >> 3] |= (Byte) (1 << (Int32) (BitNum & 0x7));
+                Data[BitNum >> 3] |= (byte)  (1 << (int) (BitNum & 0x7));
             else
-                Data[BitNum >> 3] &= (Byte)~(1 << (Int32) (BitNum & 0x7));
+                Data[BitNum >> 3] &= (byte) ~(1 << (int) (BitNum & 0x7));
 
             ++BitNum;
             return flag;
         }
 
-        public Boolean ReadFlag()
+        public bool ReadFlag()
         {
             if (BitNum > MaxReadBitNum)
             {
@@ -587,7 +584,7 @@ namespace TNL.NET.Utils
                 return false;
             }
 
-            var mask = 1 << ((Int32) BitNum & 0x7);
+            var mask = 1 << ((int) BitNum & 0x7);
             var ret = (Data[BitNum >> 3] & mask) != 0;
 
             ++BitNum;
@@ -595,13 +592,13 @@ namespace TNL.NET.Utils
             return ret;
         }
 
-        public Boolean Write(Boolean value)
+        public bool Write(bool value)
         {
             WriteFlag(value);
             return !Error;
         }
 
-        public Boolean Read(out Boolean value)
+        public bool Read(out bool value)
         {
             value = ReadFlag();
             return !Error;
@@ -609,14 +606,14 @@ namespace TNL.NET.Utils
 
         #region Strings
 
-        public void WriteString(String text, Byte maxLen = 255)
+        public void WriteString(string text, byte maxLen = 255)
         {
             if (text == null)
                 text = "";
 
             var chars = GetCharsForText(text, maxLen);
 
-            Byte j;
+            byte j;
             for (j = 0; j < maxLen && StringBuffer[j] == chars[j] && StringBuffer[j] != 0; ++j) { }
 
             Array.Copy(chars, j, StringBuffer, j, maxLen - j);
@@ -625,30 +622,32 @@ namespace TNL.NET.Utils
             if (WriteFlag(j > 2))
             {
                 WriteInt(j, 8);
-                WriteHuffBuffer(j, (Byte)(maxLen - j));
+                WriteHuffBuffer(j, (byte) (maxLen - j));
             }
             else
                 WriteHuffBuffer(0, maxLen);
         }
 
-        private static Byte[] GetCharsForText(String text, Byte maxlen)
+        private static byte[] GetCharsForText(string text, byte maxlen)
         {
-            var ret = new Byte[maxlen];
+            var ret = new byte[maxlen];
             var txtb = Encoding.UTF8.GetBytes(text);
+
             Array.Copy(txtb, 0, ret, 0, Math.Min(maxlen, text.Length));
+
             return ret;
         }
 
-        public void ReadString(out String stringBuf)
+        public void ReadString(out string stringBuf)
         {
-            ReadHuffBuffer(out stringBuf, (Byte)(ReadFlag() ? ReadInt(8) : 0));
+            ReadHuffBuffer(out stringBuf, (byte)(ReadFlag() ? ReadInt(8) : 0));
         }
 
-        private void ReadHuffBuffer(out String stringBuffer, Byte off = 0)
+        private void ReadHuffBuffer(out string stringBuffer, byte off = 0)
         {
             HuffmanTree.Build();
 
-            UInt32 len;
+            uint len;
 
             if (ReadFlag())
             {
@@ -675,7 +674,7 @@ namespace TNL.NET.Utils
             {
                 len = ReadInt(8);
 
-                var buff = new Byte[len];
+                var buff = new byte[len];
 
                 Read(len, buff);
 
@@ -684,10 +683,10 @@ namespace TNL.NET.Utils
                 StringBuffer[off + len] = 0;
             }
 
-            stringBuffer = Encoding.UTF8.GetString(StringBuffer, 0, (Int32) len + off);
+            stringBuffer = Encoding.UTF8.GetString(StringBuffer, 0, (int) (len + off));
         }
 
-        private void WriteHuffBuffer(Byte off, Byte maxlen)
+        private void WriteHuffBuffer(byte off, byte maxlen)
         {
             if (StringBuffer[off] == 0)
             {
@@ -722,7 +721,7 @@ namespace TNL.NET.Utils
             }
             else
             {
-                var temp = new Byte[len];
+                var temp = new byte[len];
 
                 Array.Copy(StringBuffer, off, temp, 0, len);
 
@@ -730,7 +729,7 @@ namespace TNL.NET.Utils
             }
         }
 
-        private static UInt32 Strlen(Byte[] buffer, Byte off)
+        private static uint Strlen(byte[] buffer, byte off)
         {
             var c = 0U;
 
@@ -756,33 +755,32 @@ namespace TNL.NET.Utils
                 ste = StringTable.ReadStringTableEntry(this);
             else
             {
-                String buf;
-                ReadString(out buf);
+                ReadString(out string buf);
 
                 ste = new StringTableEntry();
                 ste.Set(buf.Contains("\0") ? buf.Substring(0, buf.IndexOf('\0')) : buf);
             }
         }
 
-        public Boolean Write(UInt32 numBytes, Byte[] buffer)
+        public bool Write(uint numBytes, byte[] buffer)
         {
             return WriteBits(numBytes << 3, buffer);
         }
 
-        public Boolean Read(UInt32 numBytes, Byte[] buffer)
+        public bool Read(uint numBytes, byte[] buffer)
         {
             return ReadBits(numBytes << 3, buffer);
         }
 
         #region TemplatizedReadWrite
 
-        public Boolean Write(Byte value)
+        public bool Write(byte value)
         {
             var temp = value;
 
             for (var i = 0; i < 1; ++i)
             {
-                CurrentByte[0] = (Byte) ((temp >> (i * 8)) & 0xFF);
+                CurrentByte[0] = (byte) ((temp >> (i * 8)) & 0xFF);
 
                 if (i != 1 - 1)
                     WriteBits(8, CurrentByte);
@@ -791,9 +789,9 @@ namespace TNL.NET.Utils
             return WriteBits(8, CurrentByte);
         }
 
-        public Boolean Read(out Byte value)
+        public bool Read(out byte value)
         {
-            var temp = new Byte[1];
+            var temp = new byte[1];
 
             var success = Read(1, temp);
 
@@ -802,30 +800,30 @@ namespace TNL.NET.Utils
             return success;
         }
 
-        public Boolean Write(SByte value)
+        public bool Write(sbyte value)
         {
-            return Write(1, new [] { (Byte) value });
+            return Write(1, new[] { (byte) value });
         }
 
-        public Boolean Read(out SByte value)
+        public bool Read(out sbyte value)
         {
-            var arr = new Byte[1];
+            var arr = new byte[1];
 
             var success = Read(1, arr);
 
-            value = (SByte) arr[0];
+            value = (sbyte) arr[0];
 
             return success;
         }
 
-        public Boolean Write(UInt16 value)
+        public bool Write(ushort value)
         {
             return Write(2, BitConverter.GetBytes(value));
         }
 
-        public Boolean Read(out UInt16 value)
+        public bool Read(out ushort value)
         {
-            var arr = new Byte[2];
+            var arr = new byte[2];
 
             var success = Read(2, arr);
 
@@ -834,14 +832,14 @@ namespace TNL.NET.Utils
             return success;
         }
 
-        public Boolean Write(Int16 value)
+        public bool Write(short value)
         {
             return Write(2, BitConverter.GetBytes(value));
         }
 
-        public Boolean Read(out Int16 value)
+        public bool Read(out short value)
         {
-            var arr = new Byte[2];
+            var arr = new byte[2];
 
             var success = Read(2, arr);
 
@@ -850,14 +848,14 @@ namespace TNL.NET.Utils
             return success;
         }
 
-        public Boolean Write(UInt32 value)
+        public bool Write(uint value)
         {
             return Write(4, BitConverter.GetBytes(value));
         }
 
-        public Boolean Read(out UInt32 value)
+        public bool Read(out uint value)
         {
-            var arr = new Byte[4];
+            var arr = new byte[4];
 
             var success = Read(4, arr);
 
@@ -866,14 +864,14 @@ namespace TNL.NET.Utils
             return success;
         }
 
-        public Boolean Write(Int32 value)
+        public bool Write(int value)
         {
             return Write(4, BitConverter.GetBytes(value));
         }
 
-        public Boolean Read(out Int32 value)
+        public bool Read(out int value)
         {
-            var arr = new Byte[4];
+            var arr = new byte[4];
 
             var success = Read(4, arr);
 
@@ -882,14 +880,14 @@ namespace TNL.NET.Utils
             return success;
         }
 
-        public Boolean Write(UInt64 value)
+        public bool Write(ulong value)
         {
             return Write(8, BitConverter.GetBytes(value));
         }
 
-        public Boolean Read(out UInt64 value)
+        public bool Read(out ulong value)
         {
-            var arr = new Byte[8];
+            var arr = new byte[8];
 
             var success = Read(8, arr);
 
@@ -898,14 +896,14 @@ namespace TNL.NET.Utils
             return success;
         }
 
-        public Boolean Write(Int64 value)
+        public bool Write(long value)
         {
             return Write(8, BitConverter.GetBytes(value));
         }
 
-        public Boolean Read(out Int64 value)
+        public bool Read(out long value)
         {
-            var arr = new Byte[8];
+            var arr = new byte[8];
 
             var success = Read(8, arr);
 
@@ -914,14 +912,14 @@ namespace TNL.NET.Utils
             return success;
         }
 
-        public Boolean Write(Single value)
+        public bool Write(float value)
         {
             return Write(4, BitConverter.GetBytes(value));
         }
 
-        public Boolean Read(out Single value)
+        public bool Read(out float value)
         {
-            var arr = new Byte[4];
+            var arr = new byte[4];
 
             var success = Read(4, arr);
 
@@ -930,14 +928,14 @@ namespace TNL.NET.Utils
             return success;
         }
 
-        public Boolean Write(Double value)
+        public bool Write(double value)
         {
             return Write(8, BitConverter.GetBytes(value));
         }
 
-        public Boolean Read(out Double value)
+        public bool Read(out double value)
         {
-            var arr = new Byte[8];
+            var arr = new byte[8];
 
             var success = Read(8, arr);
 
@@ -948,47 +946,47 @@ namespace TNL.NET.Utils
 
         #endregion TemplatizedReadWrite
 
-        public Boolean SetBit(UInt32 bitCount, Boolean set)
+        public bool SetBit(uint bitCount, bool set)
         {
             if (bitCount >= MaxWriteBitNum && !ResizeBits(bitCount - MaxWriteBitNum + 1))
                 return false;
 
             if (set)
-                GetBuffer()[bitCount >> 3] |= (Byte) (1 << ((Int32) bitCount & 0x7));
+                GetBuffer()[bitCount >> 3] |= (byte)  (1 << ((int) bitCount & 0x7));
             else
-                GetBuffer()[bitCount >> 3] &= (Byte)~(1 << ((Int32) bitCount & 0x7));
+                GetBuffer()[bitCount >> 3] &= (byte) ~(1 << ((int) bitCount & 0x7));
 
             return true;
         }
 
-        public Boolean TestBit(UInt32 bitCount)
+        public bool TestBit(uint bitCount)
         {
-            return (GetBuffer()[bitCount >> 3] & (1 << ((Int32) bitCount & 0x7))) != 0;
+            return (GetBuffer()[bitCount >> 3] & (1 << ((int) bitCount & 0x7))) != 0;
         }
 
-        public Boolean IsFull()
+        public bool IsFull()
         {
             return BitNum > (GetBufferSize() << 3);
         }
 
-        public Boolean IsValid()
+        public bool IsValid()
         {
             return !Error;
         }
 
-        public void HashAndEncrypt(UInt32 hashDigestSize, UInt32 encryptStartOffset, SymmetricCipher theCipher)
+        public void HashAndEncrypt(uint hashDigestSize, uint encryptStartOffset, SymmetricCipher theCipher)
         {
             var digestStart = GetBytePosition();
             SetBytePosition(digestStart);
 
-            var hash = new SHA256Managed().ComputeHash(Data, 0, (Int32) digestStart);
+            var hash = new SHA256Managed().ComputeHash(Data, 0, (int) digestStart);
 
             Write(hashDigestSize, hash);
 
             theCipher.Encrypt(GetBuffer(), encryptStartOffset, GetBuffer(), encryptStartOffset, GetBytePosition() - encryptStartOffset);
         }
 
-        public Boolean DecryptAndCheckHash(UInt32 hashDigestSize, UInt32 decryptStartOffset, SymmetricCipher theCipher)
+        public bool DecryptAndCheckHash(uint hashDigestSize, uint decryptStartOffset, SymmetricCipher theCipher)
         {
             var bufferSize = GetBufferSize();
             var buffer = GetBuffer();
@@ -998,7 +996,7 @@ namespace TNL.NET.Utils
 
             theCipher.Decrypt(buffer, decryptStartOffset, buffer, decryptStartOffset, bufferSize - decryptStartOffset);
 
-            var hash = new SHA256Managed().ComputeHash(buffer, 0, (Int32)(bufferSize - hashDigestSize));
+            var hash = new SHA256Managed().ComputeHash(buffer, 0, (int) (bufferSize - hashDigestSize));
 
             var ret = Memcmp(buffer, bufferSize - hashDigestSize, hash, 0U, hashDigestSize);
             if (ret)
@@ -1007,7 +1005,7 @@ namespace TNL.NET.Utils
             return ret;
         }
 
-        private static Boolean Memcmp(Byte[] a, UInt32 offsetA, Byte[] b, UInt32 offsetB, UInt32 length)
+        private static bool Memcmp(byte[] a, uint offsetA, byte[] b, uint offsetB, uint length)
         {
             for (var i = 0U; i < length; ++i)
                 if (a[offsetA + i] != b[offsetB + i])

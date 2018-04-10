@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TNL.NET.Entities
+namespace TNL.Entities
 {
     using Data;
     using Notify;
-    using Structs;
+    using Structures;
     using Types;
     using Utils;
 
     public class GhostRef
     {
-        public UInt64 Mask { get; set; }
-        public UInt32 GhostInfoFlags { get; set; }
+        public ulong Mask { get; set; }
+        public uint GhostInfoFlags { get; set; }
         public GhostInfo Ghost { get; set; }
         public GhostRef NextRef { get; set; }
         public GhostRef UpdateChain { get; set; }
@@ -22,25 +22,25 @@ namespace TNL.NET.Entities
     {
         #region Consts
 
-        public const UInt32 GhostIdBitSize = 10;
-        public const UInt32 GhostLookupTableSizeShift = 10;
+        public const uint GhostIdBitSize = 10U;
+        public const uint GhostLookupTableSizeShift = 10U;
 
-        public const UInt32 MaxGhostCount = (1U << (Int32) GhostIdBitSize);
-        public const UInt32 GhostCountBitSize = GhostIdBitSize + 1;
+        public const uint MaxGhostCount = (1U << (int) GhostIdBitSize);
+        public const uint GhostCountBitSize = GhostIdBitSize + 1;
 
-        public const UInt32 GhostLookupTableSize = (1 << (Int32) GhostLookupTableSizeShift);
-        public const UInt32 GhostLookupTableMask = (GhostLookupTableSize - 1);
+        public const uint GhostLookupTableSize = (1U << (int) GhostLookupTableSizeShift);
+        public const uint GhostLookupTableMask = (GhostLookupTableSize - 1);
 
         #endregion Consts
 
         protected GhostInfo[] GhostArray;
 
-        protected Int32 GhostZeroUpdateIndex;
-        protected Int32 GhostFreeIndex;
+        protected int GhostZeroUpdateIndex;
+        protected int GhostFreeIndex;
 
-        protected Boolean Ghosting;
-        protected Boolean Scoping;
-        protected UInt32 GhostingSequence;
+        protected bool Ghosting;
+        protected bool Scoping;
+        protected uint GhostingSequence;
         protected NetObject[] LocalGhosts;
         protected GhostInfo[] GhostRefs;
         protected NetObject ScopeObject;
@@ -111,15 +111,15 @@ namespace TNL.NET.Entities
                 if (packRef.Ghost.LastUpdateChain == packRef)
                     packRef.Ghost.LastUpdateChain = null;
 
-                if ((packRef.GhostInfoFlags & (UInt32) GhostInfoFlags.Ghosting) != 0U)
+                if ((packRef.GhostInfoFlags & (uint) GhostInfoFlags.Ghosting) != 0U)
                 {
-                    packRef.Ghost.Flags |= (UInt32) GhostInfoFlags.NotYetGhosted;
-                    packRef.Ghost.Flags &= ~(UInt32) GhostInfoFlags.Ghosting;
+                    packRef.Ghost.Flags |= (uint) GhostInfoFlags.NotYetGhosted;
+                    packRef.Ghost.Flags &= ~(uint) GhostInfoFlags.Ghosting;
                 }
-                else if ((packRef.GhostInfoFlags & (UInt32)GhostInfoFlags.KillingGhost) != 0U)
+                else if ((packRef.GhostInfoFlags & (uint)GhostInfoFlags.KillingGhost) != 0U)
                 {
-                    packRef.Ghost.Flags |= (UInt32) GhostInfoFlags.KillGhost;
-                    packRef.Ghost.Flags &= ~(UInt32) GhostInfoFlags.KillingGhost;
+                    packRef.Ghost.Flags |= (uint) GhostInfoFlags.KillGhost;
+                    packRef.Ghost.Flags &= ~(uint) GhostInfoFlags.KillingGhost;
                 }
 
                 packRef = temp;
@@ -143,14 +143,14 @@ namespace TNL.NET.Entities
 
                 var temp = packRef.NextRef;
 
-                if ((packRef.GhostInfoFlags & (UInt32) GhostInfoFlags.Ghosting) != 0U)
+                if ((packRef.GhostInfoFlags & (uint) GhostInfoFlags.Ghosting) != 0U)
                 {
-                    packRef.Ghost.Flags &= ~(UInt32) GhostInfoFlags.Ghosting;
+                    packRef.Ghost.Flags &= ~(uint) GhostInfoFlags.Ghosting;
 
                     if (packRef.Ghost.Obj != null)
                         packRef.Ghost.Obj.OnGhostAvailable(this);
                 }
-                else if ((packRef.GhostInfoFlags & (UInt32) GhostInfoFlags.KillingGhost) != 0U)
+                else if ((packRef.GhostInfoFlags & (uint) GhostInfoFlags.KillingGhost) != 0U)
                     FreeGhostInfo(packRef.Ghost);
 
                 packRef = temp;
@@ -169,8 +169,8 @@ namespace TNL.NET.Entities
                 var walk = GhostArray[i];
                 ++walk.UpdateSkipCount;
 
-                if ((walk.Flags & (UInt32) GhostInfoFlags.ScopeLocalAlways) == 0)
-                    walk.Flags &= ~(UInt32) GhostInfoFlags.InScope;
+                if ((walk.Flags & (uint) GhostInfoFlags.ScopeLocalAlways) == 0)
+                    walk.Flags &= ~(uint) GhostInfoFlags.InScope;
             }
 
             if (ScopeObject != null)
@@ -198,7 +198,7 @@ namespace TNL.NET.Entities
 
             for (var i = GhostZeroUpdateIndex - 1; i >= 0; --i)
             {
-                if ((GhostArray[i].Flags & (UInt32) GhostInfoFlags.InScope) == 0)
+                if ((GhostArray[i].Flags & (uint) GhostInfoFlags.InScope) == 0)
                     DetachObject(GhostArray[i]);
             }
 
@@ -209,15 +209,15 @@ namespace TNL.NET.Entities
                 if (walk.Index > maxIndex)
                     maxIndex = walk.Index;
 
-                if ((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0U &&
-                    (walk.Flags & (UInt32) GhostInfoFlags.NotYetGhosted) != 0U)
+                if ((walk.Flags & (uint) GhostInfoFlags.KillGhost) != 0U &&
+                    (walk.Flags & (uint) GhostInfoFlags.NotYetGhosted) != 0U)
                 {
                     FreeGhostInfo(walk);
                     continue;
                 }
 
-                if ((walk.Flags & (UInt32) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting)) == 0U)
-                    walk.Priority = (walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0U ? 10000.0f : walk.Obj.GetUpdatePriority(ScopeObject, walk.UpdateMask, (Int32) walk.UpdateSkipCount);
+                if ((walk.Flags & (uint) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting)) == 0U)
+                    walk.Priority = (walk.Flags & (uint) GhostInfoFlags.KillGhost) != 0U ? 10000.0f : walk.Obj.GetUpdatePriority(ScopeObject, walk.UpdateMask, (int) walk.UpdateSkipCount);
                 else
                     walk.Priority = 0.0f;
             }
@@ -244,12 +244,12 @@ namespace TNL.NET.Entities
             if (sendSize < 3)
                 sendSize = 3;
 
-            stream.WriteInt((UInt32) sendSize - 3U, 3);
+            stream.WriteInt((uint) sendSize - 3U, 3);
 
             for (var i = GhostZeroUpdateIndex - 1; i >= 0 && !stream.IsFull(); --i)
             {
                 var walk = GhostArray[i];
-                if ((walk.Flags & (UInt32) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting)) != 0U)
+                if ((walk.Flags & (uint) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting)) != 0U)
                     continue;
 
                 var updateStart = stream.GetBitPosition();
@@ -257,19 +257,19 @@ namespace TNL.NET.Entities
                 var retMask = 0UL;
 
                 stream.WriteFlag(true);
-                stream.WriteInt(walk.Index, (Byte) sendSize);
+                stream.WriteInt(walk.Index, (byte) sendSize);
 
-                if (!stream.WriteFlag((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0U))
+                if (!stream.WriteFlag((walk.Flags & (uint) GhostInfoFlags.KillGhost) != 0U))
                 {
                     if (ConnectionParameters.DebugObjectSizes)
                         stream.AdvanceBitPosition(BitStreamPosBitSize);
 
                     var startPos = stream.GetBitPosition();
 
-                    if ((walk.Flags & (UInt32) GhostInfoFlags.NotYetGhosted) != 0U)
+                    if ((walk.Flags & (uint) GhostInfoFlags.NotYetGhosted) != 0U)
                     {
                         var classId = walk.Obj.GetClassId(GetNetClassGroup());
-                        stream.WriteClassId(classId, (UInt32) NetClassType.NetClassTypeObject, (UInt32) GetNetClassGroup());
+                        stream.WriteClassId(classId, (uint) NetClassType.NetClassTypeObject, (uint) GetNetClassGroup());
                         NetObject.PIsInitialUpdate = true;
                     }
 
@@ -310,22 +310,22 @@ namespace TNL.NET.Entities
                 upd.GhostInfoFlags = 0U;
                 upd.UpdateChain = null;
 
-                if ((walk.Flags & (UInt32) GhostInfoFlags.KillGhost) != 0U)
+                if ((walk.Flags & (uint) GhostInfoFlags.KillGhost) != 0U)
                 {
-                    walk.Flags &= ~(UInt32) GhostInfoFlags.KillGhost;
-                    walk.Flags |= (UInt32) GhostInfoFlags.KillingGhost;
+                    walk.Flags &= ~(uint) GhostInfoFlags.KillGhost;
+                    walk.Flags |= (uint) GhostInfoFlags.KillingGhost;
                     walk.UpdateMask = 0UL;
                     upd.Mask = updateMask;
                     GhostPushToZero(walk);
-                    upd.GhostInfoFlags = (UInt32) GhostInfoFlags.KillingGhost;
+                    upd.GhostInfoFlags = (uint) GhostInfoFlags.KillingGhost;
                 }
                 else
                 {
-                    if ((walk.Flags & (UInt32) GhostInfoFlags.NotYetGhosted) != 0U)
+                    if ((walk.Flags & (uint) GhostInfoFlags.NotYetGhosted) != 0U)
                     {
-                        walk.Flags &= ~(UInt32) GhostInfoFlags.NotYetGhosted;
-                        walk.Flags |= (UInt32) GhostInfoFlags.Ghosting;
-                        upd.GhostInfoFlags = (UInt32) GhostInfoFlags.Ghosting;
+                        walk.Flags &= ~(uint) GhostInfoFlags.NotYetGhosted;
+                        walk.Flags |= (uint) GhostInfoFlags.Ghosting;
+                        upd.GhostInfoFlags = (uint) GhostInfoFlags.Ghosting;
                     }
 
                     walk.UpdateMask = retMask;
@@ -357,11 +357,11 @@ namespace TNL.NET.Entities
             if (!stream.ReadFlag())
                 return;
 
-            var idSize = (Int32) stream.ReadInt(3) + 3;
+            var idSize = (int) stream.ReadInt(3) + 3;
 
             while (stream.ReadFlag())
             {
-                var index = stream.ReadInt((Byte) idSize);
+                var index = stream.ReadInt((byte) idSize);
 
                 if (stream.ReadFlag())
                 {
@@ -379,14 +379,14 @@ namespace TNL.NET.Entities
 
                     if (LocalGhosts[index] == null)
                     {
-                        var classId = stream.ReadClassId((UInt32) NetClassType.NetClassTypeObject, (UInt32) GetNetClassGroup());
+                        var classId = stream.ReadClassId((uint) NetClassType.NetClassTypeObject, (uint) GetNetClassGroup());
                         if (classId == 0xFFFFFFFFU)
                         {
                             SetLastError("Invalid packet.");
                             return;
                         }
 
-                        var obj = Create((UInt32) GetNetClassGroup(), (UInt32) NetClassType.NetClassTypeObject, (Int32) classId) as NetObject;
+                        var obj = Create((uint) GetNetClassGroup(), (uint) NetClassType.NetClassTypeObject, (int) classId) as NetObject;
                         if (obj == null)
                         {
                             SetLastError("Invalid packet.");
@@ -419,7 +419,7 @@ namespace TNL.NET.Entities
                             if (gc == null)
                                 return;
 
-                            obj.SetServerObject(gc.ResolveGhostParent((Int32) index));
+                            obj.SetServerObject(gc.ResolveGhostParent((int) index));
                         }
                     }
                     else
@@ -434,7 +434,7 @@ namespace TNL.NET.Entities
             }
         }
 
-        public override Boolean IsDataToTransmit()
+        public override bool IsDataToTransmit()
         {
             return base.IsDataToTransmit() || GhostZeroUpdateIndex != 0U;
         }
@@ -490,7 +490,7 @@ namespace TNL.NET.Entities
             }
         }
 
-        protected Boolean ValidateGhostArray()
+        protected bool ValidateGhostArray()
         {
             return true;
         }
@@ -514,7 +514,7 @@ namespace TNL.NET.Entities
         {
         }
 
-        public void SetGhostFrom(Boolean ghostFrom)
+        public void SetGhostFrom(bool ghostFrom)
         {
             if (GhostArray != null)
                 return;
@@ -537,7 +537,7 @@ namespace TNL.NET.Entities
             }
         }
 
-        public void SetGhostTo(Boolean ghostTo)
+        public void SetGhostTo(bool ghostTo)
         {
             if (LocalGhosts != null)
                 return;
@@ -546,17 +546,17 @@ namespace TNL.NET.Entities
                 LocalGhosts = new NetObject[MaxGhostCount];
         }
 
-        public Boolean DoesGhostFrom()
+        public bool DoesGhostFrom()
         {
             return GhostArray != null;
         }
 
-        public Boolean DoesGhostTo()
+        public bool DoesGhostTo()
         {
             return LocalGhosts != null;
         }
 
-        public UInt32 GetGhostingSequence()
+        public uint GetGhostingSequence()
         {
             return GhostingSequence;
         }
@@ -587,7 +587,7 @@ namespace TNL.NET.Entities
             {
                 if (GhostArray[i] != null && GhostArray[i].Obj == obj)
                 {
-                    GhostArray[i].Flags |= (UInt32) GhostInfoFlags.InScope;
+                    GhostArray[i].Flags |= (uint) GhostInfoFlags.InScope;
                     return;
                 }
             }
@@ -600,7 +600,7 @@ namespace TNL.NET.Entities
             gi.UpdateMask = 0xFFFFFFFFFFFFFFFFUL;
             GhostPushNonZero(gi);
 
-            gi.Flags = (UInt32) (GhostInfoFlags.NotYetGhosted | GhostInfoFlags.InScope);
+            gi.Flags = (uint) (GhostInfoFlags.NotYetGhosted | GhostInfoFlags.InScope);
             gi.Obj = obj;
             gi.LastUpdateChain = null;
             gi.UpdateSkipCount = 0U;
@@ -625,7 +625,7 @@ namespace TNL.NET.Entities
             {
                 if (GhostArray[i] != null && GhostArray[i].Obj == obj)
                 {
-                    GhostArray[i].Flags |= (UInt32) GhostInfoFlags.ScopeLocalAlways;
+                    GhostArray[i].Flags |= (uint) GhostInfoFlags.ScopeLocalAlways;
                     return;
                 }
             }
@@ -640,18 +640,18 @@ namespace TNL.NET.Entities
             {
                 if (GhostArray[i] != null && GhostArray[i].Obj == obj)
                 {
-                    GhostArray[i].Flags &= ~(UInt32) GhostInfoFlags.ScopeLocalAlways;
+                    GhostArray[i].Flags &= ~(uint) GhostInfoFlags.ScopeLocalAlways;
                     return;
                 }
             }
         }
 
-        public NetObject ResolveGhost(Int32 id)
+        public NetObject ResolveGhost(int id)
         {
             return id == -1 ? null : LocalGhosts[id];
         }
 
-        public NetObject ResolveGhostParent(Int32 id)
+        public NetObject ResolveGhostParent(int id)
         {
             return GhostRefs[id].Obj;
         }
@@ -707,22 +707,22 @@ namespace TNL.NET.Entities
             ++GhostFreeIndex;
         }
 
-        public Int32 GetGhostIndex(NetObject obj)
+        public int GetGhostIndex(NetObject obj)
         {
             if (obj == null)
                 return -1;
 
             if (!DoesGhostFrom())
-                return (Int32) obj.GetNetIndex();
+                return (int) obj.GetNetIndex();
 
             for (var i = 0; i < MaxGhostCount; ++i)
-                if (GhostArray[i] != null && GhostArray[i].Obj == obj && (GhostArray[i].Flags & (UInt32) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting | GhostInfoFlags.NotYetGhosted | GhostInfoFlags.KillGhost)) == 0U)
-                    return (Int32) GhostArray[i].Index;
+                if (GhostArray[i] != null && GhostArray[i].Obj == obj && (GhostArray[i].Flags & (uint) (GhostInfoFlags.KillingGhost | GhostInfoFlags.Ghosting | GhostInfoFlags.NotYetGhosted | GhostInfoFlags.KillGhost)) == 0U)
+                    return (int) GhostArray[i].Index;
 
             return -1;
         }
 
-        public Boolean IsGhostAvailable(NetObject obj)
+        public bool IsGhostAvailable(NetObject obj)
         {
             return GetGhostIndex(obj) != -1;
         }
@@ -759,14 +759,14 @@ namespace TNL.NET.Entities
             rpcStartGhosting(GhostingSequence);
         }
 
-        public Boolean IsGhosting()
+        public bool IsGhosting()
         {
             return Ghosting;
         }
 
         public void DetachObject(GhostInfo info)
         {
-            info.Flags |= (UInt32) GhostInfoFlags.KillGhost;
+            info.Flags |= (uint) GhostInfoFlags.KillGhost;
 
             if (info.UpdateMask == 0UL)
             {
@@ -791,7 +791,7 @@ namespace TNL.NET.Entities
 
         private class GhostInfoComparer : IComparer<GhostInfo>
         {
-            public Int32 Compare(GhostInfo a, GhostInfo b)
+            public int Compare(GhostInfo a, GhostInfo b)
             {
                 var ret = a.Priority - b.Priority;
                 return ret < 0.0f ? -1 : (ret > 0.0f ? 1 : 0);
@@ -799,19 +799,16 @@ namespace TNL.NET.Entities
         }
 
         #region RPC Calls
-
-// ReSharper disable InconsistentNaming
-// ReSharper disable UnusedMember.Local
-        public void rpcStartGhosting(UInt32 sequence)
+        public void rpcStartGhosting(uint sequence)
         #region rpcStartGhosting
         {
             var rpcEvent = new RPCStartGhosting();
-            rpcEvent.Functor.Set(new Object[] { sequence });
+            rpcEvent.Functor.Set(new object[] { sequence });
 
             PostNetEvent(rpcEvent);
         }
 
-        private void rpcStartGhosting_remote(UInt32 sequence)
+        private void rpcStartGhosting_remote(uint sequence)
         #endregion
         {
             if (!DoesGhostTo())
@@ -824,16 +821,16 @@ namespace TNL.NET.Entities
             rpcReadyForNormalGhosts(sequence);
         }
 
-        public void rpcReadyForNormalGhosts(UInt32 sequence)
+        public void rpcReadyForNormalGhosts(uint sequence)
         #region rpcReadyForNormalGhosts
         {
             var rpcEvent = new RPCReadyForNormalGhosts();
-            rpcEvent.Functor.Set(new Object[] { sequence });
+            rpcEvent.Functor.Set(new object[] { sequence });
 
             PostNetEvent(rpcEvent);
         }
 
-        private void rpcReadyForNormalGhosts_remote(UInt32 sequence)
+        private void rpcReadyForNormalGhosts_remote(uint sequence)
         #endregion
         {
             if (!DoesGhostFrom())
@@ -850,7 +847,7 @@ namespace TNL.NET.Entities
         #region rpcEndGhosting
         {
             var rpcEvent = new RPCEndGhosting();
-            rpcEvent.Functor.Set(new Object[] { });
+            rpcEvent.Functor.Set(new object[] { });
 
             PostNetEvent(rpcEvent);
         }
@@ -867,19 +864,15 @@ namespace TNL.NET.Entities
             DeleteLocalGhosts();
             OnEndGhosting();
         }
-// ReSharper restore UnusedMember.Local
-// ReSharper restore InconsistentNaming
-
         #endregion
 
         #region RPC Classes
-
         private class RPCStartGhosting : RPCEvent
         {
             public static NetClassRepInstance<RPCStartGhosting> DynClassRep;
             public RPCStartGhosting() : base(RPCGuaranteeType.RPCGuaranteedOrdered, RPCDirection.RPCDirAny)
-            { Functor = new FunctorDecl<GhostConnection>("rpcStartGhosting_remote", new[] { typeof(UInt32) }); }
-            public override Boolean CheckClassType(Object obj) { return (obj as GhostConnection) != null; }
+            { Functor = new FunctorDecl<GhostConnection>("rpcStartGhosting_remote", new[] { typeof(uint) }); }
+            public override bool CheckClassType(object obj) { return (obj as GhostConnection) != null; }
             public override NetClassRep GetClassRep() { return DynClassRep; }
         }
 
@@ -887,8 +880,8 @@ namespace TNL.NET.Entities
         {
             public static NetClassRepInstance<RPCReadyForNormalGhosts> DynClassRep;
             public RPCReadyForNormalGhosts() : base(RPCGuaranteeType.RPCGuaranteedOrdered, RPCDirection.RPCDirAny)
-            { Functor = new FunctorDecl<GhostConnection>("rpcReadyForNormalGhosts_remote", new[] { typeof(UInt32) }); }
-            public override Boolean CheckClassType(Object obj) { return (obj as GhostConnection) != null; }
+            { Functor = new FunctorDecl<GhostConnection>("rpcReadyForNormalGhosts_remote", new[] { typeof(uint) }); }
+            public override bool CheckClassType(object obj) { return (obj as GhostConnection) != null; }
             public override NetClassRep GetClassRep() { return DynClassRep; }
         }
 
@@ -897,10 +890,9 @@ namespace TNL.NET.Entities
             public static NetClassRepInstance<RPCEndGhosting> DynClassRep;
             public RPCEndGhosting() : base(RPCGuaranteeType.RPCGuaranteedOrdered, RPCDirection.RPCDirAny)
             { Functor = new FunctorDecl<GhostConnection>("rpcEndGhosting_remote", new Type[] { }); }
-            public override Boolean CheckClassType(Object obj) { return (obj as GhostConnection) != null; }
+            public override bool CheckClassType(object obj) { return (obj as GhostConnection) != null; }
             public override NetClassRep GetClassRep() { return DynClassRep; }
         }
-
         #endregion
     }
 }

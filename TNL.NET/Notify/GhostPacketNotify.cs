@@ -1,4 +1,4 @@
-﻿namespace TNL.NET.Notify
+﻿namespace TNL.Notify
 {
     using Entities;
 

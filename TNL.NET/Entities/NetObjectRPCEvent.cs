@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TNL.NET.Entities
+﻿namespace TNL.Entities
 {
     using Utils;
 
@@ -29,7 +27,7 @@ namespace TNL.NET.Entities
             if (!stream.WriteFlag(ghostIndex != -1))
                 return;
 
-            stream.WriteInt((UInt32) ghostIndex, (Byte) GhostConnection.GhostIdBitSize);
+            stream.WriteInt((uint) ghostIndex, (byte) GhostConnection.GhostIdBitSize);
             base.Pack(ps, stream);
         }
 
@@ -44,7 +42,7 @@ namespace TNL.NET.Entities
             {
                 if (stream.ReadFlag())
                 {
-                    var ghostIndex = (Int32) stream.ReadInt((Byte) GhostConnection.GhostIdBitSize);
+                    var ghostIndex = (int) stream.ReadInt((byte) GhostConnection.GhostIdBitSize);
                     base.Unpack(ps, stream);
 
                     DestObject = RpcDirection == NetObjectRPCDirection.RPCToGhost ? gc.ResolveGhost(ghostIndex) : gc.ResolveGhostParent(ghostIndex);

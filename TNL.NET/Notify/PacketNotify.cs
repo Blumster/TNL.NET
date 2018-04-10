@@ -1,13 +1,11 @@
-﻿using System;
-
-namespace TNL.NET.Notify
+﻿namespace TNL.Notify
 {
-    using Structs;
+    using Structures;
 
     public class PacketNotify
     {
-        public Boolean RateChanged { get; set; }
-        public Int32 SendTime { get; set; }
+        public bool RateChanged { get; set; }
+        public int SendTime { get; set; }
         public ConnectionStringTable.PacketList StringList { get; set; }
         public PacketNotify NextPacket { get; set; }
 

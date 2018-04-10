@@ -1,20 +1,18 @@
-﻿using System;
-
-namespace TNL.NET.Entities
+﻿namespace TNL.Entities
 {
     using Utils;
 
     public class Certificate : ByteBuffer
     {
-        public const UInt32 MaxPayloadSize = 512;
+        public const uint MaxPayloadSize = 512;
 
         protected AsymmetricKey PublicKey { get; set; }
         protected ByteBuffer PayLoad { get; set; }
         protected ByteBuffer Signature { get; set; }
-        protected Boolean PIsValid { get; set; }
-        protected UInt32 SignatureByteSize { get; set; }
+        protected bool PIsValid { get; set; }
+        protected uint SignatureByteSize { get; set; }
 
-        public Certificate(Byte[] data, UInt32 dataSize)
+        public Certificate(byte[] data, uint dataSize)
             : base(data, dataSize)
         {
             SignatureByteSize = 0;
@@ -78,12 +76,12 @@ namespace TNL.NET.Entities
                 PIsValid = true;
         }
 
-        public Boolean IsValid()
+        public bool IsValid()
         {
             return PIsValid;
         }
 
-        public Boolean Validate(AsymmetricKey signatoryPublicKey)
+        public bool Validate(AsymmetricKey signatoryPublicKey)
         {
             return PIsValid && signatoryPublicKey.VerifySignature(new ByteBuffer(GetBuffer(), SignatureByteSize), Signature);
         }

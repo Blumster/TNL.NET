@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TNL.NET.Entities
+namespace TNL.Entities
 {
     using Utils;
 
@@ -8,20 +8,20 @@ namespace TNL.NET.Entities
 
     public class SymmetricCipher
     {
-        public const Int32 BlockSize = 16;
-        public const Int32 KeySize = 16;
+        public const int BlockSize = 16;
+        public const int KeySize = 16;
 
-        private UInt32[] _counter = new UInt32[4];
-        private UInt32[] _initVector = new UInt32[16];
-        private Byte[] _pad = new Byte[16];
+        private uint[] _counter = new uint[4];
+        private uint[] _initVector = new uint[16];
+        private byte[] _pad = new byte[16];
         private Key _symmetricKey = new Key();
-        private UInt32 _padLen;
+        private uint _padLen;
 
         public SymmetricCipher(ByteBuffer theByteBuffer)
         {
             if (theByteBuffer.GetBufferSize() != KeySize * 2)
             {
-                var buffer = new Byte[KeySize];
+                var buffer = new byte[KeySize];
 
                 throw new NotImplementedException();
 
@@ -37,17 +37,17 @@ namespace TNL.NET.Entities
             _padLen = 0;
         }
 
-        public SymmetricCipher(Byte[] symmetricKey, Byte[] initVector)
+        public SymmetricCipher(byte[] symmetricKey, byte[] initVector)
         {
             Array.Copy(initVector, _initVector, BlockSize);
             Array.Copy(initVector, _counter, BlockSize); // Invalid Write in the Original TNL code i guess
-            
+
             throw new NotImplementedException();
 
             _padLen = 0;
         }
 
-        public void SetupCounter(UInt32 counterValue1, UInt32 counterValue2, UInt32 counterValue3, UInt32 counterValue4)
+        public void SetupCounter(uint counterValue1, uint counterValue2, uint counterValue3, uint counterValue4)
         {
             _counter[0] = _initVector[0] + counterValue1;
             _counter[1] = _initVector[1] + counterValue2;
@@ -59,7 +59,7 @@ namespace TNL.NET.Entities
             _padLen = 0;
         }
 
-        public void Encrypt(Byte[] plainText, UInt32 plainTextOffset, Byte[] cipherText, UInt32 cipherTextOffset, UInt32 len)
+        public void Encrypt(byte[] plainText, uint plainTextOffset, byte[] cipherText, uint cipherTextOffset, uint len)
         {
             while (len-- > 0)
             {
@@ -69,13 +69,13 @@ namespace TNL.NET.Entities
                     _padLen = 0;
                 }
 
-                var encryptedChar = (Byte)(plainText[plainTextOffset++] ^ _pad[_padLen]);
+                var encryptedChar = (byte) (plainText[plainTextOffset++] ^ _pad[_padLen]);
                 _pad[_padLen++] = cipherText[cipherTextOffset++] = encryptedChar;
             }
-            
+
         }
 
-        public void Decrypt(Byte[] plainText, UInt32 plainTextOffset, Byte[] cipherText, UInt32 cipherTextOffset, UInt32 len)
+        public void Decrypt(byte[] plainText, uint plainTextOffset, byte[] cipherText, uint cipherTextOffset, uint len)
         {
             while (len-- > 0)
             {
@@ -86,18 +86,18 @@ namespace TNL.NET.Entities
                 }
 
                 var encryptedChar = cipherText[cipherTextOffset++];
-                plainText[plainTextOffset++] = (Byte) (encryptedChar ^ _pad[_padLen]);
+                plainText[plainTextOffset++] = (byte) (encryptedChar ^ _pad[_padLen]);
                 _pad[_padLen++] = encryptedChar;
             }
-            
+
         }
 
         private class Key
         {
-            public UInt32[] Ek = new UInt32[64];
-            public UInt32[] Dk = new UInt32[64];
+            public uint[] Ek = new uint[64];
+            public uint[] Dk = new uint[64];
 
-            public Int32 Nr { get; set; }
+            public int Nr { get; set; }
         }
     }
 }

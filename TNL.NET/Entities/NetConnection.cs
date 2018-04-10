@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 
-namespace TNL.NET.Entities
+namespace TNL.Entities
 {
     using Data;
     using Network;
     using Notify;
-    using Structs;
+    using Structures;
     using Types;
     using Utils;
 
@@ -48,40 +48,40 @@ namespace TNL.NET.Entities
     {
         #region Consts
 
-        public const UInt32 DefaultFixedBandwidth = 2500;
-        public const UInt32 DefaultFixedSendPeriod = 96;
-        public const UInt32 MaxFixedBandwidth = 65535;
-        public const UInt32 MaxFixedSendPeriod = 2047;
-        public const UInt32 MinimumPaddingBits = 128;
-        public const UInt32 MaxPacketDataSize = 1490;
+        public const uint DefaultFixedBandwidth = 2500;
+        public const uint DefaultFixedSendPeriod = 96;
+        public const uint MaxFixedBandwidth = 65535;
+        public const uint MaxFixedSendPeriod = 2047;
+        public const uint MinimumPaddingBits = 128;
+        public const uint MaxPacketDataSize = 1490;
 
-        public const Int32 MaxPacketWindowSizeShift = 5;
-        public const Int32 MaxPacketWindowSize = (1 << MaxPacketWindowSizeShift);
-        public const Int32 PacketWindowMask = MaxPacketWindowSize - 1;
-        public const Int32 MaxAckMaskSize = 1 << (MaxPacketWindowSizeShift - 5);
-        public const Int32 MaxAckByteCount = MaxAckMaskSize << 2;
-        public const Int32 SequenceNumberBitSize = 11;
-        public const Int32 SequenceNumberWindowSize = (1 << SequenceNumberBitSize);
-        public const Int32 SequenceNumberMask = -SequenceNumberWindowSize;
-        public const Int32 AckSequenceNumberBitSize = 10;
-        public const Int32 AckSequenceNumberWindowSize = (1 << AckSequenceNumberBitSize);
-        public const Int32 AckSequenceNumberMask = -AckSequenceNumberWindowSize;
-        public const Int32 PacketHeaderBitSize = 3 + AckSequenceNumberBitSize + SequenceNumberBitSize;
-        public const Int32 PacketHeaderByteSize = (PacketHeaderBitSize + 7) >> 3;
-        public const Int32 PacketHeaderPadBits = (PacketHeaderByteSize << 3) - PacketHeaderBitSize;
-        public const Int32 MessageSignatureBytes = 5;
+        public const int MaxPacketWindowSizeShift = 5;
+        public const int MaxPacketWindowSize = (1 << MaxPacketWindowSizeShift);
+        public const int PacketWindowMask = MaxPacketWindowSize - 1;
+        public const int MaxAckMaskSize = 1 << (MaxPacketWindowSizeShift - 5);
+        public const int MaxAckByteCount = MaxAckMaskSize << 2;
+        public const int SequenceNumberBitSize = 11;
+        public const int SequenceNumberWindowSize = (1 << SequenceNumberBitSize);
+        public const int SequenceNumberMask = -SequenceNumberWindowSize;
+        public const int AckSequenceNumberBitSize = 10;
+        public const int AckSequenceNumberWindowSize = (1 << AckSequenceNumberBitSize);
+        public const int AckSequenceNumberMask = -AckSequenceNumberWindowSize;
+        public const int PacketHeaderBitSize = 3 + AckSequenceNumberBitSize + SequenceNumberBitSize;
+        public const int PacketHeaderByteSize = (PacketHeaderBitSize + 7) >> 3;
+        public const int PacketHeaderPadBits = (PacketHeaderByteSize << 3) - PacketHeaderBitSize;
+        public const int MessageSignatureBytes = 5;
 
-        public const Int32 AdaptiveInitialPingTimeout = 60000;
-        public const Int32 AdaptivePingRetryCount = 4;
-        public const Int32 DefaultPingTimeout = 5000;
-        public const Int32 DefaultPingRetryCount = 10;
-        public const Int32 AdaptiveUnackedSentPingTimeout = 3000;
+        public const int AdaptiveInitialPingTimeout = 60000;
+        public const int AdaptivePingRetryCount = 4;
+        public const int DefaultPingTimeout = 5000;
+        public const int DefaultPingRetryCount = 10;
+        public const int AdaptiveUnackedSentPingTimeout = 3000;
 
         #endregion Consts
 
-        protected static Char[] ErrorBuffer = new Char[256];
+        protected static char[] ErrorBuffer = new char[256];
 
-        public static readonly String[] PacketTypeNames =
+        public static readonly string[] PacketTypeNames =
         {
             "DataPacket",
             "PingPacket",
@@ -90,37 +90,37 @@ namespace TNL.NET.Entities
 
         #region Properties
 
-        public Int32 LastPacketRecvTime { get; set; }
+        public int LastPacketRecvTime { get; set; }
 
-        protected UInt32[] LastSeqRecvdAtSend { get; set; }
-        protected UInt32 LastSeqRecvd { get; set; }
-        protected UInt32 HighestAckedSeq { get; set; }
-        protected UInt32 LastSendSeq { get; set; }
-        protected UInt32[] AckMask { get; set; }
+        protected uint[] LastSeqRecvdAtSend { get; set; }
+        protected uint LastSeqRecvd { get; set; }
+        protected uint HighestAckedSeq { get; set; }
+        protected uint LastSendSeq { get; set; }
+        protected uint[] AckMask { get; set; }
 
-        private UInt32 LastRecvAckAck { get; set; }
-        private UInt32 InitialSendSeq { get; set; }
-        private UInt32 InitialRecvSeq { get; set; }
-        private Int32 HighestAckedSendTime { get; set; }
-        private Int32 PingTimeout { get; set; }
-        private Int32 PingRetryCount { get; set; }
+        private uint LastRecvAckAck { get; set; }
+        private uint InitialSendSeq { get; set; }
+        private uint InitialRecvSeq { get; set; }
+        private int HighestAckedSendTime { get; set; }
+        private int PingTimeout { get; set; }
+        private int PingRetryCount { get; set; }
 
-        public Single RoundTripTime { get; set; }
+        public float RoundTripTime { get; set; }
 
         private BitSet TypeFlags { get; set; }
-        private Int32 LastUpdateTime { get; set; }
-        private UInt32 SendDelayCredit { get; set; }
-        private Int32 SimulatedLatency { get; set; }
-        private Single SimulatedPacketLoss { get; set; }
+        private int LastUpdateTime { get; set; }
+        private uint SendDelayCredit { get; set; }
+        private int SimulatedLatency { get; set; }
+        private float SimulatedPacketLoss { get; set; }
         private NetRate RemoteRate { get; set; }
-        private Boolean LocalRateChanged { get; set; }
-        protected UInt32 CurrentPacketSendSize { get; set; } // Custom
-        protected UInt32 CurrentPacketSendPeriod { get; set; } // Custom
+        private bool LocalRateChanged { get; set; }
+        protected uint CurrentPacketSendSize { get; set; } // Custom
+        protected uint CurrentPacketSendPeriod { get; set; } // Custom
         private IPEndPoint NetAddress { get; set; }
-        private Int32 PingSendCount { get; set; }
-        private Int32 LastPingSendTime { get; set; }
+        private int PingSendCount { get; set; }
+        private int LastPingSendTime { get; set; }
 
-        public Int32 NumNotifies { get; set; }
+        public int NumNotifies { get; set; }
 
         protected PacketNotify NotifyQueueHead { get; set; }
         protected PacketNotify NotifyQueueTail { get; set; }
@@ -128,18 +128,18 @@ namespace TNL.NET.Entities
         protected ConnectionParameters ConnectionParameters { get; set; }
         protected NetRate LocalRate { get; set; }
 
-        public Int32 ConnectSendCount { get; set; }
-        public Int32 ConnectLastSendTime { get; set; }
+        public int ConnectSendCount { get; set; }
+        public int ConnectLastSendTime { get; set; }
 
         protected NetInterface Interface { get; set; }
         protected SymmetricCipher SymmetricCipher { get; set; }
 
         public NetConnectionState ConnectionState { get; set; }
 
-        private Single Cwnd { get; set; }
-        private Single SSThresh { get; set; }
-        private UInt32 LastSeqRecvdAck { get; set; }
-        private Int32 LastAckTime { get; set; }
+        private float Cwnd { get; set; }
+        private float SSThresh { get; set; }
+        private uint LastSeqRecvdAck { get; set; }
+        private int LastAckTime { get; set; }
         private ConnectionStringTable StringTable { get; set; }
 
         #endregion Properties
@@ -186,7 +186,7 @@ namespace TNL.NET.Entities
             LastSeqRecvd = 0;
             HighestAckedSeq = InitialSendSeq;
             LastSendSeq = InitialSendSeq;
-            AckMask = new UInt32[MaxAckMaskSize];
+            AckMask = new uint[MaxAckMaskSize];
             AckMask[0] = 0;
             LastRecvAckAck = 0;
             Cwnd = 2;
@@ -199,7 +199,7 @@ namespace TNL.NET.Entities
             //StringTable = null;
             NumNotifies = 0;
 
-            LastSeqRecvdAtSend = new UInt32[MaxPacketWindowSize];
+            LastSeqRecvdAtSend = new uint[MaxPacketWindowSize];
         }
 
         ~NetConnection()
@@ -207,16 +207,16 @@ namespace TNL.NET.Entities
             ClearAllPacketNotifies();
         }
 
-        private Boolean HasUnackedSentPackets()
+        private bool HasUnackedSentPackets()
         {
             return LastSendSeq != HighestAckedSeq;
         }
 
-        public virtual void OnConnectTerminated(TerminationReason reason, String reasonString)
+        public virtual void OnConnectTerminated(TerminationReason reason, string reasonString)
         {
         }
 
-        public virtual void OnConnectionTerminated(TerminationReason reason, String reasonString)
+        public virtual void OnConnectionTerminated(TerminationReason reason, string reasonString)
         {
         }
 
@@ -228,28 +228,27 @@ namespace TNL.NET.Entities
                 SetIsConnectionToClient();
         }
 
-        public virtual Boolean ValidateCertificate(Certificate theCertificate, Boolean isInitiator)
+        public virtual bool ValidateCertificate(Certificate theCertificate, bool isInitiator)
         {
             return true;
         }
 
-        public virtual Boolean ValidatePublicKey(AsymmetricKey theKey, Boolean isInitiator)
+        public virtual bool ValidatePublicKey(AsymmetricKey theKey, bool isInitiator)
         {
             return true;
         }
 
         public virtual void WriteConnectRequest(BitStream stream)
         {
-            stream.Write((UInt32) GetNetClassGroup());
+            stream.Write((uint) GetNetClassGroup());
             stream.Write(NetClassRep.GetClassGroupCRC(GetNetClassGroup()));
         }
 
-        public virtual Boolean ReadConnectRequest(BitStream reader, ref String errorString)
+        public virtual bool ReadConnectRequest(BitStream reader, ref string errorString)
         {
-            UInt32 classGroup, classCRC;
 
-            reader.Read(out classGroup);
-            reader.Read(out classCRC);
+            reader.Read(out uint classGroup);
+            reader.Read(out uint classCRC);
 
             if ((NetClassGroup)classGroup == GetNetClassGroup() && classCRC == NetClassRep.GetClassGroupCRC(GetNetClassGroup()))
                 return true;
@@ -262,7 +261,7 @@ namespace TNL.NET.Entities
         {
         }
 
-        public virtual Boolean ReadConnectAccept(BitStream reader, ref String errorString)
+        public virtual bool ReadConnectAccept(BitStream reader, ref string errorString)
         {
             return true;
         }
@@ -296,12 +295,12 @@ namespace TNL.NET.Entities
             return new PacketNotify();
         }
 
-        public UInt32 GetNextSendSequence()
+        public uint GetNextSendSequence()
         {
             return LastSendSeq + 1;
         }
 
-        public UInt32 GetLastSendSequence()
+        public uint GetLastSendSequence()
         {
             return LastSendSeq;
         }
@@ -340,7 +339,7 @@ namespace TNL.NET.Entities
                     break;
                 }
 
-                GetInterface().HandleConnectionError(this, new String(ErrorBuffer, 0, strLen));
+                GetInterface().HandleConnectionError(this, new string(ErrorBuffer, 0, strLen));
             }
 
             ErrorBuffer[0] = '\0';
@@ -382,7 +381,7 @@ namespace TNL.NET.Entities
             if (SymmetricCipher == null)
                 return;
 
-            SymmetricCipher.SetupCounter(LastSendSeq, LastSeqRecvd, (UInt32) packetType, 0U);
+            SymmetricCipher.SetupCounter(LastSendSeq, LastSeqRecvd, (uint) packetType, 0U);
 
             stream.HashAndEncrypt(MessageSignatureBytes, PacketHeaderByteSize, SymmetricCipher);
         }
@@ -397,7 +396,7 @@ namespace TNL.NET.Entities
             if (packetType == NetPacketType.DataPacket)
                 ++LastSendSeq;
 
-            stream.WriteInt((UInt32) packetType, 2);
+            stream.WriteInt((uint) packetType, 2);
             stream.WriteInt(LastSendSeq, 5);
             stream.WriteFlag(true);
             stream.WriteInt(LastSendSeq >> 5, SequenceNumberBitSize - 5);
@@ -409,19 +408,19 @@ namespace TNL.NET.Entities
             var wordCount = (ackByteCount + 3) >> 2;
 
             for (var i = 0U; i < wordCount; ++i)
-                stream.WriteInt(AckMask[i], (Byte) (i == wordCount - 1 ? (ackByteCount - (i * 4)) * 8 : 32));
+                stream.WriteInt(AckMask[i], (byte) (i == wordCount - 1 ? (ackByteCount - (i * 4)) * 8 : 32));
 
             var sendDelay = Interface.GetCurrentTime() - LastPacketRecvTime;
             if (sendDelay > 2047)
                 sendDelay = 2047;
 
-            stream.WriteInt((UInt32) sendDelay >> 3, 8);
+            stream.WriteInt((uint) sendDelay >> 3, 8);
 
             if (packetType == NetPacketType.DataPacket)
                 LastSeqRecvdAtSend[LastSendSeq & PacketWindowMask] = LastSeqRecvd;
         }
 
-        protected Boolean ReadPacketHeader(BitStream stream)
+        protected bool ReadPacketHeader(BitStream stream)
         {
             var packetType = (NetPacketType) stream.ReadInt(2);
             var sequenceNumber = stream.ReadInt(5);
@@ -434,14 +433,14 @@ namespace TNL.NET.Entities
             if (padBits != 0)
                 return false;
 
-            sequenceNumber |= (UInt32) (LastSeqRecvd & SequenceNumberMask);
+            sequenceNumber |= (uint) (LastSeqRecvd & SequenceNumberMask);
             if (sequenceNumber < LastSeqRecvd)
                 sequenceNumber += SequenceNumberWindowSize;
 
             if (sequenceNumber - LastSeqRecvd > (MaxPacketWindowSize - 1))
                 return false;
 
-            highestAck |= (UInt32) (HighestAckedSeq & AckSequenceNumberMask);
+            highestAck |= (uint) (HighestAckedSeq & AckSequenceNumberMask);
             if (highestAck < HighestAckedSeq)
                 highestAck += AckSequenceNumberWindowSize;
 
@@ -450,7 +449,7 @@ namespace TNL.NET.Entities
 
             if (SymmetricCipher != null)
             {
-                SymmetricCipher.SetupCounter(sequenceNumber, highestAck, (UInt32) packetType, 0);
+                SymmetricCipher.SetupCounter(sequenceNumber, highestAck, (uint) packetType, 0);
 
                 if (!stream.DecryptAndCheckHash(MessageSignatureBytes, PacketHeaderByteSize, SymmetricCipher))
                 {
@@ -463,11 +462,11 @@ namespace TNL.NET.Entities
             if (ackByteCount > MaxAckByteCount || packetType >= NetPacketType.InvalidPacketType)
                 return false;
 
-            var ackMask = new UInt32[MaxAckMaskSize];
+            var ackMask = new uint[MaxAckMaskSize];
             var ackWordCount = (ackByteCount + 3) >> 2;
 
             for (var i = 0U; i < ackWordCount; ++i)
-                ackMask[i] = stream.ReadInt((Byte) (i == ackWordCount - 1 ? (ackByteCount - (i * 4)) * 8 : 32));
+                ackMask[i] = stream.ReadInt((byte) (i == ackWordCount - 1 ? (ackByteCount - (i * 4)) * 8 : 32));
 
             var sendDelay = (stream.ReadInt(8) << 3) + 4;
 
@@ -486,8 +485,8 @@ namespace TNL.NET.Entities
 
             for (var i = 0U; i < MaxAckMaskSize; ++i)
             {
-                var nextShift = AckMask[i] >> (Int32) (32 - ackMaskShift);
-                AckMask[i] = (AckMask[i] << (Int32) ackMaskShift) | upShifted;
+                var nextShift = AckMask[i] >> (int) (32 - ackMaskShift);
+                AckMask[i] = (AckMask[i] << (int) ackMaskShift) | upShifted;
                 upShifted = nextShift;
             }
 
@@ -499,14 +498,14 @@ namespace TNL.NET.Entities
                 var ackMaskBit = (highestAck - notifyIndex) & 0x1FU;
                 var ackMaskWord = (highestAck - notifyIndex) >> 5;
 
-                var packetTransmitSuccess = (ackMask[ackMaskWord] & (1U << (Int32) ackMaskBit)) != 0U;
+                var packetTransmitSuccess = (ackMask[ackMaskWord] & (1U << (int) ackMaskBit)) != 0U;
 
                 HighestAckedSendTime = 0;
                 HandleNotify(notifyIndex, packetTransmitSuccess);
 
                 if (HighestAckedSendTime > 0)
                 {
-                    var roundTripDelta = Interface.GetCurrentTime() - (HighestAckedSendTime + (Int32)sendDelay);
+                    var roundTripDelta = Interface.GetCurrentTime() - (HighestAckedSendTime + (int) sendDelay);
 
                     RoundTripTime = RoundTripTime * 0.9f + roundTripDelta * 0.1f;
 
@@ -541,7 +540,7 @@ namespace TNL.NET.Entities
             note.RateChanged = LocalRateChanged;
             LocalRateChanged = false;
 
-            if (stream.WriteFlag(note.RateChanged) && !stream.WriteFlag(TypeFlags.Test((UInt32) NetConnectionTypeFlags.ConnectionAdaptive)))
+            if (stream.WriteFlag(note.RateChanged) && !stream.WriteFlag(TypeFlags.Test((uint) NetConnectionTypeFlags.ConnectionAdaptive)))
             {
                 stream.WriteRangedU32(LocalRate.MaxRecvBandwidth, 0, MaxFixedBandwidth);
                 stream.WriteRangedU32(LocalRate.MaxSendBandwidth, 0, MaxFixedBandwidth);
@@ -555,7 +554,7 @@ namespace TNL.NET.Entities
             if (stream.ReadFlag())
             {
                 if (stream.ReadFlag())
-                    TypeFlags.Set((UInt32) NetConnectionTypeFlags.ConnectionRemoteAdaptive);
+                    TypeFlags.Set((uint) NetConnectionTypeFlags.ConnectionRemoteAdaptive);
                 else
                 {
                     RemoteRate.MaxRecvBandwidth = stream.ReadRangedU32(0, MaxFixedBandwidth);
@@ -586,7 +585,7 @@ namespace TNL.NET.Entities
             SendPacket(stream);
         }
 
-        protected void HandleNotify(UInt32 sequence, Boolean recvd)
+        protected void HandleNotify(uint sequence, bool recvd)
         {
             //Console.WriteLine("NetConnection {0}: NOTIFY {1} {2}", NetAddress, sequence, recvd ? "RECVD" : "DROPPED");
 
@@ -639,22 +638,22 @@ namespace TNL.NET.Entities
                 HandleNotify(0, false);
         }
 
-        public void SetInitialRecvSequence(UInt32 sequence)
+        public void SetInitialRecvSequence(uint sequence)
         {
             InitialRecvSeq = LastSeqRecvd = LastRecvAckAck = sequence;
         }
 
-        public UInt32 GetInitialRecvSequence()
+        public uint GetInitialRecvSequence()
         {
             return InitialRecvSeq;
         }
 
-        public UInt32 GetInitialSendSequence()
+        public uint GetInitialSendSequence()
         {
             return InitialSendSeq;
         }
 
-        public void Connect(NetInterface connectionInterface, IPEndPoint address, Boolean requestKeyExchange = false, Boolean requestCertificate = false)
+        public void Connect(NetInterface connectionInterface, IPEndPoint address, bool requestKeyExchange = false, bool requestCertificate = false)
         {
             ConnectionParameters.RequestKeyExchange = requestKeyExchange;
             ConnectionParameters.RequestCertificate = requestCertificate;
@@ -666,12 +665,12 @@ namespace TNL.NET.Entities
             Interface.StartConnection(this);
         }
 
-        public Boolean ConnectLocal(NetInterface connectionInterface, NetInterface serverInterface)
+        public bool ConnectLocal(NetInterface connectionInterface, NetInterface serverInterface)
         {
             var co = Create(GetClassName());
             var client = this;
             var server = co as NetConnection;
-            String error = null;
+            string error = null;
 
             var stream = new PacketStream();
 
@@ -714,7 +713,7 @@ namespace TNL.NET.Entities
             return true;
         }
 
-        public void ConnectArranged(NetInterface connectionInterface, List<IPEndPoint> possibleAddresses, Nonce myNonce, Nonce remoteNonce, ByteBuffer sharedSecret, Boolean isInitiator, Boolean requestsKeyExchange = false, Boolean requestsCertificate = false)
+        public void ConnectArranged(NetInterface connectionInterface, List<IPEndPoint> possibleAddresses, Nonce myNonce, Nonce remoteNonce, ByteBuffer sharedSecret, bool isInitiator, bool requestsKeyExchange = false, bool requestsCertificate = false)
         {
             ConnectionParameters.RequestKeyExchange = requestsKeyExchange;
             ConnectionParameters.RequestCertificate = requestsCertificate;
@@ -730,12 +729,12 @@ namespace TNL.NET.Entities
             Interface.StartArrangedConnection(this);
         }
 
-        public void Disconnect(String reason)
+        public void Disconnect(string reason)
         {
             Interface.Disconnect(this, TerminationReason.ReasonSelfDisconnect, reason);
         }
 
-        public Boolean WindowFull()
+        public bool WindowFull()
         {
             if (LastSendSeq - HighestAckedSeq >= (MaxPacketWindowSize - 2))
                 return true;
@@ -751,7 +750,7 @@ namespace TNL.NET.Entities
             CurrentPacketSendPeriod = Math.Max(LocalRate.MinPacketSendPeriod, RemoteRate.MinPacketRecvPeriod);
 
             var maxBandwith = Math.Min(LocalRate.MaxSendBandwidth, RemoteRate.MaxRecvBandwidth);
-            CurrentPacketSendSize = (UInt32) (maxBandwith * CurrentPacketSendPeriod * 0.001f);
+            CurrentPacketSendSize = (uint) (maxBandwith * CurrentPacketSendPeriod * 0.001f);
 
             if (CurrentPacketSendSize > MaxPacketDataSize)
                 CurrentPacketSendSize = MaxPacketDataSize;
@@ -767,7 +766,7 @@ namespace TNL.NET.Entities
             return ConnectionParameters;
         }
 
-        public Boolean IsInitiator()
+        public bool IsInitiator()
         {
             return ConnectionParameters.IsInitiator;
         }
@@ -782,14 +781,14 @@ namespace TNL.NET.Entities
             return RemoteConnection;
         }
 
-        public static Char[] GetErrorBuffer()
+        public static char[] GetErrorBuffer()
         {
             return ErrorBuffer;
         }
 
-        public static void SetLastError(String fmt, params Object[] args)
+        public static void SetLastError(string fmt, params object[] args)
         {
-            var str = String.Format(fmt, args);
+            var str = string.Format(fmt, args);
 
             Array.Copy(str.ToCharArray(), ErrorBuffer, str.Length > ErrorBuffer.Length ? ErrorBuffer.Length : str.Length);
         }
@@ -814,13 +813,13 @@ namespace TNL.NET.Entities
             return NetClassGroup.NetClassGroupInvalid;
         }
 
-        public void SetPingTimeouts(Int32 msPerPing, Int32 pingRetryCount)
+        public void SetPingTimeouts(int msPerPing, int pingRetryCount)
         {
             PingRetryCount = pingRetryCount;
             PingTimeout = msPerPing;
         }
 
-        public void SetSimulatedNetParams(Single packetLoss, Int32 latency)
+        public void SetSimulatedNetParams(int packetLoss, int latency)
         {
             SimulatedPacketLoss = packetLoss;
             SimulatedLatency = latency;
@@ -828,40 +827,40 @@ namespace TNL.NET.Entities
 
         public void SetIsConnectionToServer()
         {
-            TypeFlags.Set((UInt32) NetConnectionTypeFlags.ConnectionToServer);
+            TypeFlags.Set((uint) NetConnectionTypeFlags.ConnectionToServer);
         }
 
-        public Boolean IsConnectionToServer()
+        public bool IsConnectionToServer()
         {
-            return TypeFlags.Test((UInt32) NetConnectionTypeFlags.ConnectionToServer);
+            return TypeFlags.Test((uint) NetConnectionTypeFlags.ConnectionToServer);
         }
 
         public void SetIsConnectionToClient()
         {
-            TypeFlags.Set((UInt32) NetConnectionTypeFlags.ConnectionToClient);
+            TypeFlags.Set((uint) NetConnectionTypeFlags.ConnectionToClient);
         }
 
-        public Boolean IsConnectionToClient()
+        public bool IsConnectionToClient()
         {
-            return TypeFlags.Test((UInt32) NetConnectionTypeFlags.ConnectionToClient);
+            return TypeFlags.Test((uint) NetConnectionTypeFlags.ConnectionToClient);
         }
 
-        public Boolean IsLocalConnection()
+        public bool IsLocalConnection()
         {
             return RemoteConnection != null;
         }
 
-        public Boolean IsNetworkConnection()
+        public bool IsNetworkConnection()
         {
             return RemoteConnection == null;
         }
 
-        public Single GetRoundTripTime()
+        public float GetRoundTripTime()
         {
             return RoundTripTime;
         }
 
-        public Single GetOneWayTime()
+        public float GetOneWayTime()
         {
             return RoundTripTime * 0.5F;
         }
@@ -871,7 +870,7 @@ namespace TNL.NET.Entities
             return NetAddress;
         }
 
-        public String GetNetAddressString()
+        public string GetNetAddressString()
         {
             return NetAddress.ToString();
         }
@@ -906,7 +905,7 @@ namespace TNL.NET.Entities
             return Interface.SendTo(GetNetAddress(), stream);
         }
 
-        public Boolean CheckTimeout(Int32 time)
+        public bool CheckTimeout(int time)
         {
             if (!IsNetworkConnection())
                 return false;
@@ -944,7 +943,7 @@ namespace TNL.NET.Entities
             return false;
         }
 
-        public void CheckPacketSend(Boolean force, Int32 curTime)
+        public void CheckPacketSend(bool force, int curTime)
         {
             var delay = CurrentPacketSendPeriod;
 
@@ -955,7 +954,7 @@ namespace TNL.NET.Entities
                     if (curTime - LastUpdateTime + SendDelayCredit < delay)
                         return;
 
-                    SendDelayCredit = (UInt32) (curTime - (LastUpdateTime + delay - SendDelayCredit));
+                    SendDelayCredit = (uint) (curTime - (LastUpdateTime + delay - SendDelayCredit));
                     if (SendDelayCredit > 1000U)
                         SendDelayCredit = 1000U;
                 }
@@ -1004,20 +1003,20 @@ namespace TNL.NET.Entities
             return ConnectionState;
         }
 
-        public Boolean IsEstablished()
+        public bool IsEstablished()
         {
             return ConnectionState == NetConnectionState.Connected;
         }
 
         public void SetIsAdaptive()
         {
-            TypeFlags.Set((UInt32) NetConnectionTypeFlags.ConnectionAdaptive);
+            TypeFlags.Set((uint) NetConnectionTypeFlags.ConnectionAdaptive);
             LocalRateChanged = true;
         }
 
-        public void SetFixedRateParameters(UInt32 minPacketSendPeriod, UInt32 minPacketRecvPeriod, UInt32 maxSendBandwidth, UInt32 maxRecvBandwidth)
+        public void SetFixedRateParameters(uint minPacketSendPeriod, uint minPacketRecvPeriod, uint maxSendBandwidth, uint maxRecvBandwidth)
         {
-            TypeFlags.Clear((UInt32) NetConnectionTypeFlags.ConnectionAdaptive);
+            TypeFlags.Clear((uint) NetConnectionTypeFlags.ConnectionAdaptive);
 
             LocalRate.MaxRecvBandwidth = maxRecvBandwidth;
             LocalRate.MaxSendBandwidth = maxSendBandwidth;
@@ -1028,12 +1027,12 @@ namespace TNL.NET.Entities
             ComputeNegotiatedRate();
         }
 
-        public Boolean IsAdaptive()
+        public bool IsAdaptive()
         {
-            return TypeFlags.Test((UInt32) (NetConnectionTypeFlags.ConnectionAdaptive | NetConnectionTypeFlags.ConnectionRemoteAdaptive));
+            return TypeFlags.Test((uint) (NetConnectionTypeFlags.ConnectionAdaptive | NetConnectionTypeFlags.ConnectionRemoteAdaptive));
         }
 
-        public virtual Boolean IsDataToTransmit()
+        public virtual bool IsDataToTransmit()
         {
             return false;
         }
@@ -1049,7 +1048,7 @@ namespace TNL.NET.Entities
             rep = new NetClassRepInstance<T>(typeof(T).Name, 0, NetClassType.NetClassTypeNone, 0);
         }
 
-        public static void ImplementNetConnection<T>(out NetClassRepInstance<T> rep, out NetConnectionRep connRep, Boolean canRemoteCreate) where T : BaseObject, new()
+        public static void ImplementNetConnection<T>(out NetClassRepInstance<T> rep, out NetConnectionRep connRep, bool canRemoteCreate) where T : BaseObject, new()
         {
             ImplementClass(out rep);
 

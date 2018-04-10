@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Net;
 
-namespace TNL.NET.Utils
+namespace TNL.Utils
 {
     using Network;
 
     public class PacketStream : BitStream
     {
-        private readonly Byte[] _buffer = new Byte[TNLSocket.MaxPacketDataSize];
+        private readonly byte[] _buffer = new byte[TNLSocket.MaxPacketDataSize];
 
-        public PacketStream(UInt32 targetPacketSize = TNLSocket.MaxPacketDataSize)
+        public PacketStream(uint targetPacketSize = TNLSocket.MaxPacketDataSize)
         {
             BufSize = targetPacketSize;
             Data = _buffer;
 
             SetMaxSizes(targetPacketSize, TNLSocket.MaxPacketDataSize);
             Reset();
-            CurrentByte = new Byte[1];
+            CurrentByte = new byte[1];
         }
 
         public NetError SendTo(TNLSocket outgoingSocket, IPEndPoint theAddress)
@@ -34,7 +34,7 @@ namespace TNL.NET.Utils
 
             var d = incomingSocket.PacketsToBeHandled.Dequeue();
 
-            var dataSize = d.Item2.Length > TNLSocket.MaxPacketDataSize ? TNLSocket.MaxPacketDataSize : (UInt32) d.Item2.Length;
+            var dataSize = d.Item2.Length > TNLSocket.MaxPacketDataSize ? TNLSocket.MaxPacketDataSize : (uint) d.Item2.Length;
 
             Array.Copy(d.Item2, _buffer, dataSize);
 

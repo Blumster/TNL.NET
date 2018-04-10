@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TNL.NET.Entities
+﻿namespace TNL.Entities
 {
     using Data;
     using Types;
@@ -38,21 +36,21 @@ namespace TNL.NET.Entities
 
         public virtual void NotifyPosted(EventConnection ps) { }
         public virtual void NotifySent(EventConnection ps) { }
-        public virtual void NotifyDelivered(EventConnection ps, Boolean madeId) { }
+        public virtual void NotifyDelivered(EventConnection ps, bool madeId) { }
 
         public EventDirection GetEventDirection()
         {
             return EventDirection;
         }
 
-        public virtual String GetDebugName()
+        public virtual string GetDebugName()
         {
             return GetClassName();
         }
 
-        public static void ImplementNetEvent<T>(out NetClassRepInstance<T> rep, String name, NetClassMask groupMask, Int32 classVersion) where T : NetEvent, new()
+        public static void ImplementNetEvent<T>(out NetClassRepInstance<T> rep, string name, NetClassMask groupMask, int classVersion) where T : NetEvent, new()
         {
-            rep = new NetClassRepInstance<T>(name, (UInt32) groupMask, NetClassType.NetClassTypeEvent, classVersion);
+            rep = new NetClassRepInstance<T>(name, (uint) groupMask, NetClassType.NetClassTypeEvent, classVersion);
         }
     }
 }

@@ -1,13 +1,11 @@
-﻿using System;
-
-namespace TNL.NET.Entities
+﻿namespace TNL.Entities
 {
-    using Structs;
+    using Interfaces;
     using Utils;
 
     public enum RPCDirection
     {
-        RPCDirAny            = 1,
+        RPCDirAny = 1,
         RPCDirServerToClient = 2,
         RPCDirClientToServer = 3
     }
@@ -15,16 +13,16 @@ namespace TNL.NET.Entities
     public enum RPCGuaranteeType
     {
         RPCGuaranteedOrdered = 0,
-        RPCGuaranteed        = 1,
-        RPCUnguaranteed      = 2
+        RPCGuaranteed = 1,
+        RPCUnguaranteed = 2
     }
 
     public abstract class RPCEvent : NetEvent
     {
-        public Functor Functor { get; set; }
+        public IFunctor Functor { get; set; }
 
         protected RPCEvent(RPCGuaranteeType gType, RPCDirection dir)
-            : base((GuaranteeType) gType, (EventDirection) dir)
+            : base((GuaranteeType)gType, (EventDirection)dir)
         {
         }
 
@@ -38,7 +36,7 @@ namespace TNL.NET.Entities
             Functor.Read(stream);
         }
 
-        public abstract Boolean CheckClassType(Object obj);
+        public abstract bool CheckClassType(object obj);
 
         public override void Process(EventConnection ps)
         {

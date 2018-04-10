@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TNL.NET.Entities
+﻿namespace TNL.Entities
 {
     using Data;
     using Interfaces;
@@ -13,22 +11,22 @@ namespace TNL.NET.Entities
             return null;
         }
 
-        public UInt32 GetClassId(NetClassGroup group)
+        public uint GetClassId(NetClassGroup group)
         {
             return GetClassRep().GetClassId(group);
         }
 
-        public String GetClassName()
+        public string GetClassName()
         {
             return GetClassRep().ClassName;
         }
 
-        public static BaseObject Create(String className)
+        public static BaseObject Create(string className)
         {
             return NetClassRep.Create(className);
         }
 
-        public static BaseObject Create(UInt32 groupId, UInt32 typeId, Int32 classId)
+        public static BaseObject Create(uint groupId, uint typeId, int classId)
         {
             return NetClassRep.Create(groupId, typeId, classId);
         }

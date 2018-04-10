@@ -4,24 +4,24 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 
-namespace TNL.NET.Entities
+namespace TNL.Entities
 {
     using Network;
-    using Structs;
+    using Structures;
     using Types;
     using Utils;
 
     public enum PacketType : byte
     {
-        ConnectChallengeRequest  = 0,
+        ConnectChallengeRequest = 0,
         ConnectChallengeResponse = 1,
-        ConnectRequest           = 2,
-        ConnectReject            = 3,
-        ConnectAccept            = 4,
-        Disconnect               = 5,
-        Punch                    = 6,
-        ArrangedConnectRequest   = 7,
-        FirstValidInfoPacketId   = 8
+        ConnectRequest = 2,
+        ConnectReject = 3,
+        ConnectAccept = 4,
+        Disconnect = 5,
+        Punch = 6,
+        ArrangedConnectRequest = 7,
+        FirstValidInfoPacketId = 8
     }
 
     public enum TerminationReason
@@ -37,17 +37,17 @@ namespace TNL.NET.Entities
 
     public class NetInterface
     {
-        public const UInt32 ChallengeRetryCount = 4;
-        public const UInt32 ChallengeRetryTime = 2500;
+        public const uint ChallengeRetryCount = 4;
+        public const uint ChallengeRetryTime = 2500;
 
-        public const UInt32 ConnectRetryCount = 4;
-        public const UInt32 ConnectRetryTime = 2500;
+        public const uint ConnectRetryCount = 4;
+        public const uint ConnectRetryTime = 2500;
 
-        public const UInt32 PunchRetryCount = 6;
-        public const UInt32 PunchRetryTime = 2500;
+        public const uint PunchRetryCount = 6;
+        public const uint PunchRetryTime = 2500;
 
-        public const UInt32 TimeoutCheckInterval = 1500;
-        public const UInt32 PuzzleSolutionTimeout = 30000;
+        public const uint TimeoutCheckInterval = 1500;
+        public const uint PuzzleSolutionTimeout = 30000;
 
         private readonly List<NetConnection> _connectionList = new List<NetConnection>();
 
@@ -61,18 +61,18 @@ namespace TNL.NET.Entities
 
         public TNLSocket Socket { get; set; }
 
-        protected Int32 CurrentTime { get; set; }
-        protected Boolean RequiresKeyExchange { get; set; }
-        protected Int32 LastTimeoutCheckTime { get; set; }
-        protected Byte[] RandomHashData { get; set; }
-        protected Boolean AllowConnections { get; set; }
+        protected int CurrentTime { get; set; }
+        protected bool RequiresKeyExchange { get; set; }
+        protected int LastTimeoutCheckTime { get; set; }
+        protected byte[] RandomHashData { get; set; }
+        protected bool AllowConnections { get; set; }
 
         static NetInterface()
         {
             GhostConnection.RegisterNetClassReps();
         }
 
-        public NetInterface(Int32 port)
+        public NetInterface(int port)
         {
             Socket = new TNLSocket(port);
 
@@ -82,7 +82,7 @@ namespace TNL.NET.Entities
             AllowConnections = true;
             RequiresKeyExchange = false;
 
-            RandomHashData = new Byte[12];
+            RandomHashData = new byte[12];
             RandomUtil.Read(RandomHashData, 12);
 
             CurrentTime = Environment.TickCount;
@@ -107,7 +107,7 @@ namespace TNL.NET.Entities
             PrivateKey = theKey;
         }
 
-        public void SetRequiresKeyExchange(Boolean requires)
+        public void SetRequiresKeyExchange(bool requires)
         {
             RequiresKeyExchange = requires;
         }
@@ -117,12 +117,12 @@ namespace TNL.NET.Entities
             Certificate = theCertificate;
         }
 
-        public Boolean DoesAllowConnections()
+        public bool DoesAllowConnections()
         {
             return AllowConnections;
         }
 
-        public void SetAllowConnections(Boolean allow)
+        public void SetAllowConnections(bool allow)
         {
             AllowConnections = allow;
         }
@@ -137,7 +137,7 @@ namespace TNL.NET.Entities
             return Socket.Send(address, stream.GetBuffer(), stream.GetBytePosition());
         }
 
-        public void SendToDelayed(IPEndPoint address, BitStream stream, Int32 millisecondDelay)
+        public void SendToDelayed(IPEndPoint address, BitStream stream, int millisecondDelay)
         {
             var dataSize = stream.GetBytePosition();
 
@@ -145,7 +145,7 @@ namespace TNL.NET.Entities
             {
                 RemoteAddress = address,
                 SendTime = CurrentTime + millisecondDelay,
-                PacketData = new Byte[dataSize],
+                PacketData = new byte[dataSize],
                 PacketSize = dataSize
             };
 
@@ -154,9 +154,9 @@ namespace TNL.NET.Entities
             SendPacketList.Add(dsp);
         }
 
-        protected UInt32 ComputeClientIdentityToken(IPEndPoint address, Nonce theNonce)
+        protected uint ComputeClientIdentityToken(IPEndPoint address, Nonce theNonce)
         {
-            var buff = new Byte[40];
+            var buff = new byte[40];
 
             Array.Copy(BitConverter.GetBytes(address.Port), 0, buff, 0, 4); // Port instead of transport + port
             Array.Copy(address.Address.GetAddressBytes(), 0, buff, 4, 4);
@@ -192,7 +192,7 @@ namespace TNL.NET.Entities
             PendingConnections.Remove(address);
         }
 
-        public  NetConnection FindConnection(IPEndPoint client)
+        public NetConnection FindConnection(IPEndPoint client)
         {
             return Connections.ContainsKey(client) ? Connections[client] : null;
         }
@@ -242,8 +242,7 @@ namespace TNL.NET.Entities
                 {
                     var pending = pair.Value;
 
-                    if (pending.ConnectionState == NetConnectionState.AwaitingChallengeResponse &&
-                        CurrentTime > pending.ConnectLastSendTime + ChallengeRetryTime)
+                    if (pending.ConnectionState == NetConnectionState.AwaitingChallengeResponse && CurrentTime > pending.ConnectLastSendTime + ChallengeRetryTime)
                     {
                         if (pending.ConnectSendCount > ChallengeRetryCount)
                         {
@@ -254,11 +253,10 @@ namespace TNL.NET.Entities
 
                             continue;
                         }
-                        
+
                         SendConnectChallengeRequest(pending);
                     }
-                    else if (pending.ConnectionState == NetConnectionState.AwaitingConnectResponse &&
-                        CurrentTime > pending.ConnectLastSendTime + ConnectRetryTime)
+                    else if (pending.ConnectionState == NetConnectionState.AwaitingConnectResponse && CurrentTime > pending.ConnectLastSendTime + ConnectRetryTime)
                     {
                         if (pending.ConnectSendCount > ConnectRetryCount)
                         {
@@ -275,8 +273,7 @@ namespace TNL.NET.Entities
                         else
                             SendConnectRequest(pending);
                     }
-                    else if (pending.ConnectionState == NetConnectionState.SendingPunchPackets &&
-                        CurrentTime > pending.ConnectLastSendTime + PunchRetryTime)
+                    else if (pending.ConnectionState == NetConnectionState.SendingPunchPackets && CurrentTime > pending.ConnectLastSendTime + PunchRetryTime)
                     {
                         if (pending.ConnectSendCount > PunchRetryCount)
                         {
@@ -290,8 +287,7 @@ namespace TNL.NET.Entities
 
                         SendPunchPackets(pending);
                     }
-                    else if (pending.ConnectionState == NetConnectionState.ComputingPuzzleSolution &&
-                             CurrentTime > pending.ConnectLastSendTime + PuzzleSolutionTimeout)
+                    else if (pending.ConnectionState == NetConnectionState.ComputingPuzzleSolution && CurrentTime > pending.ConnectLastSendTime + PuzzleSolutionTimeout)
                     {
                         pending.ConnectionState = NetConnectionState.ConnectTimedOut;
                         pending.OnConnectTerminated(TerminationReason.ReasonTimedOut, "Timeout");
@@ -304,7 +300,7 @@ namespace TNL.NET.Entities
                     RemovePendingConnection(conn);
 
                 removeList.Clear();
-                
+
                 LastTimeoutCheckTime = CurrentTime;
 
                 lock (_connectionList)
@@ -338,8 +334,7 @@ namespace TNL.NET.Entities
 
             var stream = new PacketStream();
 
-            IPEndPoint iep;
-            while (stream.RecvFrom(Socket, out iep) == NetError.NoError)
+            while (stream.RecvFrom(Socket, out IPEndPoint iep) == NetError.NoError)
                 ProcessPacket(iep, stream);
         }
 
@@ -347,20 +342,18 @@ namespace TNL.NET.Entities
         {
             if ((stream.GetBuffer()[0] & 0x80) != 0)
             {
-                NetConnection nc;
-                if (Connections.TryGetValue(sourceAddress, out nc) && nc != null)
+                if (Connections.TryGetValue(sourceAddress, out NetConnection nc) && nc != null)
                     nc.ReadRawPacket(stream);
             }
             else
             {
-                Byte packetType;
-                stream.Read(out packetType);
+                stream.Read(out byte packetType);
 
-                if (packetType >= (Byte) PacketType.FirstValidInfoPacketId)
+                if (packetType >= (byte) PacketType.FirstValidInfoPacketId)
                     HandleInfoPacket(sourceAddress, packetType, stream);
                 else
                 {
-                    switch ((PacketType) packetType)
+                    switch ((PacketType)packetType)
                     {
                         case PacketType.ConnectChallengeRequest:
                             HandleConnectChallengeRequest(sourceAddress, stream);
@@ -402,7 +395,7 @@ namespace TNL.NET.Entities
         {
         }
 
-        public Int32 GetCurrentTime()
+        public int GetCurrentTime()
         {
             return CurrentTime;
         }
@@ -424,7 +417,7 @@ namespace TNL.NET.Entities
         {
             var stream = new PacketStream();
 
-            stream.Write((Byte) PacketType.ConnectChallengeRequest);
+            stream.Write((byte) PacketType.ConnectChallengeRequest);
 
             var cParam = conn.GetConnectionParameters();
 
@@ -452,11 +445,11 @@ namespace TNL.NET.Entities
             SendConnectChallengeResponse(addr, clientNonce, wantsKeyExchange, wantsCertificate);
         }
 
-        protected void SendConnectChallengeResponse(IPEndPoint addr, Nonce clientNonce, Boolean wantsKeyExchange, Boolean wantsCertificate)
+        protected void SendConnectChallengeResponse(IPEndPoint addr, Nonce clientNonce, bool wantsKeyExchange, bool wantsCertificate)
         {
             var stream = new PacketStream();
 
-            stream.Write((Byte) PacketType.ConnectChallengeResponse);
+            stream.Write((byte) PacketType.ConnectChallengeResponse);
 
             clientNonce.Write(stream);
 
@@ -466,10 +459,10 @@ namespace TNL.NET.Entities
             PuzzleManager.CurrentNonce.Write(stream);
             stream.Write(PuzzleManager.CurrentDifficulty);
 
-// ReSharper disable PossibleNullReferenceException
+            // ReSharper disable PossibleNullReferenceException
             if (stream.WriteFlag(RequiresKeyExchange || (wantsKeyExchange && PrivateKey != null)))
                 stream.Write(stream.WriteFlag(wantsCertificate && Certificate != null) ? Certificate : PrivateKey.GetPublicKey());
-// ReSharper restore PossibleNullReferenceException
+            // ReSharper restore PossibleNullReferenceException
 
             stream.SendTo(Socket, addr);
         }
@@ -548,7 +541,7 @@ namespace TNL.NET.Entities
             var stream = new PacketStream();
             var cParams = conn.GetConnectionParameters();
 
-            stream.Write((Byte) PacketType.ConnectRequest);
+            stream.Write((byte) PacketType.ConnectRequest);
             cParams.Nonce.Write(stream);
             cParams.ServerNonce.Write(stream);
             stream.Write(cParams.ClientIdentity);
@@ -649,14 +642,12 @@ namespace TNL.NET.Entities
 
             cParams.DebugObjectSizes = stream.ReadFlag();
 
-            UInt32 connectSequence;
-            stream.Read(out connectSequence);
+            stream.Read(out uint connectSequence);
 
             if (connect != null)
                 Disconnect(connect, TerminationReason.ReasonSelfDisconnect, "NewConnection");
 
-            String connectionClass;
-            stream.ReadString(out connectionClass);
+            stream.ReadString(out string connectionClass);
 
             var conn = NetConnectionRep.Create(connectionClass);
             if (conn == null)
@@ -670,7 +661,7 @@ namespace TNL.NET.Entities
             if (cParams.UsingCrypto)
                 conn.SetSymmetricCipher(new SymmetricCipher(cParams.SymmetricKey, cParams.InitVector));
 
-            String errorString = null;
+            string errorString = null;
             if (!conn.ReadConnectRequest(stream, ref errorString))
             {
                 SendConnectReject(cParams, address, errorString);
@@ -689,7 +680,7 @@ namespace TNL.NET.Entities
         {
             var stream = new PacketStream();
 
-            stream.Write((Byte) PacketType.ConnectAccept);
+            stream.Write((byte) PacketType.ConnectAccept);
 
             var cParams = conn.GetConnectionParameters();
 
@@ -744,11 +735,10 @@ namespace TNL.NET.Entities
                     return;
             }
 
-            UInt32 recvSequence;
-            stream.Read(out recvSequence);
+            stream.Read(out uint recvSequence);
             conn.SetInitialRecvSequence(recvSequence);
 
-            String errorString = null;
+            string errorString = null;
             if (!conn.ReadConnectAccept(stream, ref errorString))
             {
                 RemovePendingConnection(conn);
@@ -769,14 +759,14 @@ namespace TNL.NET.Entities
             conn.OnConnectionEstablished();
         }
 
-        protected void SendConnectReject(ConnectionParameters conn, IPEndPoint address, String reason)
+        protected void SendConnectReject(ConnectionParameters conn, IPEndPoint address, string reason)
         {
             if (reason == null)
                 return;
 
             var stream = new PacketStream();
 
-            stream.Write((Byte) PacketType.ConnectReject);
+            stream.Write((byte) PacketType.ConnectReject);
 
             conn.Nonce.Write(stream);
             conn.ServerNonce.Write(stream);
@@ -802,8 +792,7 @@ namespace TNL.NET.Entities
             if (cParams.Nonce != nonce || cParams.ServerNonce != serverNonce)
                 return;
 
-            String reason;
-            stream.ReadString(out reason);
+            stream.ReadString(out string reason);
 
             if (reason == "Puzzle")
             {
@@ -843,7 +832,7 @@ namespace TNL.NET.Entities
 
             var stream = new PacketStream();
 
-            stream.Write((Byte) PacketType.Punch);
+            stream.Write((byte) PacketType.Punch);
 
             if (cParams.IsInitiator)
                 cParams.Nonce.Write(stream);
@@ -860,10 +849,8 @@ namespace TNL.NET.Entities
             {
                 cParams.Nonce.Write(stream);
 
-// ReSharper disable PossibleNullReferenceException
                 if (stream.WriteFlag(RequiresKeyExchange || (cParams.RequestKeyExchange && PrivateKey != null)))
                     stream.Write(stream.WriteFlag(cParams.RequestCertificate && Certificate != null) ? Certificate : PrivateKey.GetPublicKey());
-// ReSharper restore PossibleNullReferenceException
             }
 
             var theCipher = new SymmetricCipher(cParams.ArrangedSecret);
@@ -976,7 +963,7 @@ namespace TNL.NET.Entities
         {
             var stream = new PacketStream();
 
-            stream.Write((Byte) PacketType.ArrangedConnectRequest);
+            stream.Write((byte) PacketType.ArrangedConnectRequest);
 
             var cParams = conn.GetConnectionParameters();
 
@@ -1097,8 +1084,7 @@ namespace TNL.NET.Entities
             }
 
             cParams.DebugObjectSizes = reader.ReadFlag();
-            UInt32 connectSequence;
-            reader.Read(out connectSequence);
+            reader.Read(out uint connectSequence);
 
             if (oldConnection != null)
                 Disconnect(oldConnection, TerminationReason.ReasonSelfDisconnect, "");
@@ -1109,7 +1095,7 @@ namespace TNL.NET.Entities
             if (cParams.UsingCrypto)
                 conn.SetSymmetricCipher(new SymmetricCipher(cParams.SymmetricKey, cParams.InitVector));
 
-            String errorString = null;
+            string errorString = null;
             if (!conn.ReadConnectRequest(reader, ref errorString))
             {
                 SendConnectReject(cParams, client, errorString);
@@ -1127,7 +1113,7 @@ namespace TNL.NET.Entities
             SendConnectAccept(conn);
         }
 
-        public void Disconnect(NetConnection conn, TerminationReason reason, String reasonString)
+        public void Disconnect(NetConnection conn, TerminationReason reason, string reasonString)
         {
             if (conn.ConnectionState == NetConnectionState.AwaitingChallengeResponse ||
                 conn.ConnectionState == NetConnectionState.AwaitingConnectResponse)
@@ -1143,7 +1129,7 @@ namespace TNL.NET.Entities
                 if (conn.IsNetworkConnection())
                 {
                     var stream = new PacketStream();
-                    stream.Write((Byte) PacketType.Disconnect);
+                    stream.Write((byte) PacketType.Disconnect);
 
                     var cParams = conn.GetConnectionParameters();
 
@@ -1197,8 +1183,7 @@ namespace TNL.NET.Entities
                     return;
             }
 
-            String reason;
-            reader.ReadString(out reason);
+            reader.ReadString(out string reason);
 
             conn.ConnectionState = NetConnectionState.Disconnected;
             conn.OnConnectionTerminated(TerminationReason.ReasonRemoteDisconnectPacket, reason);
@@ -1206,7 +1191,7 @@ namespace TNL.NET.Entities
             RemoveConnection(conn);
         }
 
-        public void HandleConnectionError(NetConnection conn, String reasonString)
+        public void HandleConnectionError(NetConnection conn, string reasonString)
         {
             Disconnect(conn, TerminationReason.ReasonError, reasonString);
         }
@@ -1214,9 +1199,9 @@ namespace TNL.NET.Entities
         protected class DelaySendPacket
         {
             public IPEndPoint RemoteAddress { get; set; }
-            public Int32 SendTime { get; set; }
-            public Byte[] PacketData { get; set; }
-            public UInt32 PacketSize { get; set; }
+            public int SendTime { get; set; }
+            public byte[] PacketData { get; set; }
+            public uint PacketSize { get; set; }
         }
     }
 }

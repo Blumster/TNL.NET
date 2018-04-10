@@ -1,9 +1,7 @@
-﻿using System;
-
-namespace TNL.NET.Entities
+﻿namespace TNL.Entities
 {
     using Data;
-    using Structs;
+    using Structures;
     using Types;
     using Utils;
 
@@ -30,15 +28,15 @@ namespace TNL.NET.Entities
 
         private NetObject _prevDirtyList;
         private NetObject _nextDirtyList;
-        private UInt64 _dirtyMaskBits;
-        private UInt32 _netIndex;
+        private ulong _dirtyMaskBits;
+        private uint _netIndex;
         private GhostInfo _firstObjectRef;
         private NetObject _serverObject;
 
         protected GhostConnection OwningConnection;
         protected BitSet NetFlags;
 
-        public static Boolean PIsInitialUpdate;
+        public static bool PIsInitialUpdate;
 
         static NetObject()
         {
@@ -74,7 +72,7 @@ namespace TNL.NET.Entities
             }
         }
 
-        public Boolean IsInitialUpdate()
+        public bool IsInitialUpdate()
         {
             return PIsInitialUpdate;
         }
@@ -130,7 +128,7 @@ namespace TNL.NET.Entities
             return RPCDestConnection;
         }
 
-        public virtual Boolean OnGhostAdd(GhostConnection theConnection)
+        public virtual bool OnGhostAdd(GhostConnection theConnection)
         {
             return true;
         }
@@ -143,7 +141,7 @@ namespace TNL.NET.Entities
         {
         }
 
-        public void SetMaskBits(UInt64 orMask)
+        public void SetMaskBits(ulong orMask)
         {
             if (_dirtyMaskBits == 0UL)
             {
@@ -159,7 +157,7 @@ namespace TNL.NET.Entities
             _dirtyMaskBits |= orMask;
         }
 
-        public void ClearMaskBits(UInt64 orMask)
+        public void ClearMaskBits(ulong orMask)
         {
             if (_dirtyMaskBits > 0)
             {
@@ -191,12 +189,12 @@ namespace TNL.NET.Entities
             }
         }
 
-        public virtual Single GetUpdatePriority(NetObject scopeObject, UInt64 updateMask, Int32 updateSkips)
+        public virtual float GetUpdatePriority(NetObject scopeObject, ulong updateMask, int updateSkips)
         {
             return updateSkips * 0.1f;
         }
 
-        public virtual UInt64 PackUpdate(GhostConnection connection, UInt64 updateMask, BitStream stream)
+        public virtual ulong PackUpdate(GhostConnection connection, ulong updateMask, BitStream stream)
         {
             return 0UL;
         }
@@ -210,24 +208,24 @@ namespace TNL.NET.Entities
             connection.ObjectInScope(this);
         }
 
-        public UInt32 GetNetIndex()
+        public uint GetNetIndex()
         {
             return _netIndex;
         }
 
-        public Boolean IsGhost()
+        public bool IsGhost()
         {
-            return NetFlags.Test((UInt32) NetFlag.IsGhost);
+            return NetFlags.Test((uint) NetFlag.IsGhost);
         }
 
-        public Boolean IsScopeLocal()
+        public bool IsScopeLocal()
         {
-            return NetFlags.Test((UInt32) NetFlag.ScopeLocal);
+            return NetFlags.Test((uint) NetFlag.ScopeLocal);
         }
 
-        public Boolean IsGhostable()
+        public bool IsGhostable()
         {
-            return NetFlags.Test((UInt32) NetFlag.Ghostable);
+            return NetFlags.Test((uint) NetFlag.Ghostable);
         }
 
         public void PostRPCEvent(NetObjectRPCEvent theEvent)
@@ -239,14 +237,14 @@ namespace TNL.NET.Entities
             else
             {
                 for (var walk = _firstObjectRef; walk != null; walk = walk.NextObjectRef)
-                    if ((walk.Flags & (UInt32) GhostInfoFlags.NotAvailable) == 0)
+                    if ((walk.Flags & (uint) GhostInfoFlags.NotAvailable) == 0)
                         walk.Connection.PostNetEvent(theEvent);
             }
         }
 
         public static void ImplementNetObject<T>(out NetClassRepInstance<T> rep) where T : NetObject, new()
         {
-            rep = new NetClassRepInstance<T>(typeof(T).Name, (UInt32) NetClassMask.NetClassGroupGameMask, NetClassType.NetClassTypeObject, 0);
+            rep = new NetClassRepInstance<T>(typeof(T).Name, (uint) NetClassMask.NetClassGroupGameMask, NetClassType.NetClassTypeObject, 0);
         }
 
         public void SetOwningConnection(GhostConnection ev)
@@ -257,10 +255,10 @@ namespace TNL.NET.Entities
         public void SetNetFlags(NetFlag flag)
         {
             NetFlags.Clear();
-            NetFlags.Set((UInt32) flag);
+            NetFlags.Set((uint) flag);
         }
 
-        public void SetNetIndex(UInt32 index)
+        public void SetNetIndex(uint index)
         {
             _netIndex = index;
         }

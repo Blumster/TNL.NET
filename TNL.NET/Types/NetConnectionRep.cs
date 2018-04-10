@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace TNL.NET.Types
+namespace TNL.Types
 {
     using Entities;
 
     public class NetConnectionRep
     {
         public static readonly List<NetConnectionRep> LinkedList = new List<NetConnectionRep>();
- 
-        public NetClassRep ClassRep { get; private set; }
-        public Boolean CanRemoteCreate { get; private set; }
 
-        public NetConnectionRep(NetClassRep classRep, Boolean canRemoteCreate)
+        public NetClassRep ClassRep { get; private set; }
+        public bool CanRemoteCreate { get; private set; }
+
+        public NetConnectionRep(NetClassRep classRep, bool canRemoteCreate)
         {
             LinkedList.Add(this);
 
@@ -21,7 +20,7 @@ namespace TNL.NET.Types
             CanRemoteCreate = canRemoteCreate;
         }
 
-        public static NetConnection Create(String name)
+        public static NetConnection Create(string name)
         {
             return (from walk in LinkedList where walk.CanRemoteCreate && walk.ClassRep.ClassName == name select walk.ClassRep.Create() as NetConnection).FirstOrDefault();
         }

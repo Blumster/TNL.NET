@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace TNL.NET.Entities
+namespace TNL.Entities
 {
     using Utils;
 
@@ -13,18 +13,18 @@ namespace TNL.NET.Entities
 
     public class AsymmetricKey : ByteBuffer
     {
-        public const UInt32 StaticCryptoBufferSize = 2048U;
+        public const uint StaticCryptoBufferSize = 2048U;
 
-        private static readonly Byte[] StaticCryptoBuffer = new byte[StaticCryptoBufferSize];
+        private static readonly byte[] StaticCryptoBuffer = new byte[StaticCryptoBufferSize];
 
-        private Byte[] KeyData { get; set; }
-        private UInt32 KeySize { get; set; }
-        private Boolean PHasPrivateKey { get; set; }
+        private byte[] KeyData { get; set; }
+        private uint KeySize { get; set; }
+        private bool PHasPrivateKey { get; set; }
         private ByteBuffer PublicKey { get; set; }
         private ByteBuffer PrivateKey { get; set; }
-        private Boolean PIsValid { get; set; }
+        private bool PIsValid { get; set; }
 
-        public AsymmetricKey(Byte[] buffer, UInt32 bufferSize)
+        public AsymmetricKey(byte[] buffer, uint bufferSize)
         {
             Load(new ByteBuffer(buffer, bufferSize));
         }
@@ -38,7 +38,7 @@ namespace TNL.NET.Entities
             Load(theBuffer);
         }
 
-        public AsymmetricKey(UInt32 keySize)
+        public AsymmetricKey(uint keySize)
         {
             PIsValid = false;
 
@@ -50,13 +50,13 @@ namespace TNL.NET.Entities
         private void Load(ByteBuffer theBuffer)
         {
             PIsValid = false;
-            PHasPrivateKey = theBuffer.GetBuffer()[0] == (Byte) KeyType.KeyTypePrivate;
+            PHasPrivateKey = theBuffer.GetBuffer()[0] == (byte) KeyType.KeyTypePrivate;
 
             var bufferSize = theBuffer.GetBufferSize();
             if (bufferSize < 5)
                 return;
 
-            var temp = new Byte[4];
+            var temp = new byte[4];
             Array.Copy(theBuffer.GetBuffer(), 1, temp, 0, 4);
             Array.Reverse(temp);
 
@@ -75,12 +75,12 @@ namespace TNL.NET.Entities
             return PrivateKey;
         }
 
-        public Boolean HasPrivateKey()
+        public bool HasPrivateKey()
         {
             return PHasPrivateKey;
         }
 
-        public Boolean IsValid()
+        public bool IsValid()
         {
             return PIsValid;
         }
@@ -92,12 +92,12 @@ namespace TNL.NET.Entities
 
             throw new NotImplementedException();
 
-            var hash = new SHA256Managed().ComputeHash(StaticCryptoBuffer, 0, (Int32) StaticCryptoBufferSize);
+            var hash = new SHA256Managed().ComputeHash(StaticCryptoBuffer, 0, (int) StaticCryptoBufferSize);
 
             return new ByteBuffer(hash, 32);
         }
 
-        public UInt32 GetKeySize()
+        public uint GetKeySize()
         {
             return KeySize;
         }
@@ -106,7 +106,7 @@ namespace TNL.NET.Entities
         {
             throw new NotImplementedException();
 
-            var hash = new SHA256Managed().ComputeHash(theByteBuffer.GetBuffer(), 0, (Int32)theByteBuffer.GetBufferSize());
+            var hash = new SHA256Managed().ComputeHash(theByteBuffer.GetBuffer(), 0, (int) theByteBuffer.GetBufferSize());
 
             return new ByteBuffer(StaticCryptoBuffer, StaticCryptoBufferSize);
         }
@@ -115,7 +115,7 @@ namespace TNL.NET.Entities
         {
             throw new NotImplementedException();
 
-            var hash = new SHA256Managed().ComputeHash(theByteBuffer.GetBuffer(), 0, (Int32) theByteBuffer.GetBufferSize());
+            var hash = new SHA256Managed().ComputeHash(theByteBuffer.GetBuffer(), 0, (int) theByteBuffer.GetBufferSize());
 
             return false;
         }

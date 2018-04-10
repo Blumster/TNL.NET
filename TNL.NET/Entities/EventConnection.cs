@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TNL.NET.Entities
+namespace TNL.Entities
 {
     using Data;
     using Notify;
@@ -10,16 +10,16 @@ namespace TNL.NET.Entities
     public class EventNote
     {
         public NetEvent Event { get; set; }
-        public Int32 SeqCount { get; set; }
+        public int SeqCount { get; set; }
         public EventNote NextEvent { get; set; }
     }
 
     public class EventConnection : NetConnection
     {
-        public const UInt32 DebugCheckSum = 0xF00DBAADU;
-        public const Byte BitStreamPosBitSize = 16;
-        public const Int32 InvalidSendEventSeq = -1;
-        public const Int32 FirstValidSendEventSeq = 0;
+        public const uint DebugCheckSum = 0xF00DBAADU;
+        public const byte BitStreamPosBitSize = 16;
+        public const int InvalidSendEventSeq = -1;
+        public const int FirstValidSendEventSeq = 0;
 
         private EventNote _sendEventQueueHead;
         private EventNote _sendEventQueueTail;
@@ -28,16 +28,16 @@ namespace TNL.NET.Entities
         private EventNote _waitSeqEvents;
         private EventNote _notifyEventList;
 
-        private Int32 _nextSendEventSeq;
-        private Int32 _nextRecvEventSeq;
-        private Int32 _lastAckedEventSeq;
-        private readonly Single _packetFillFraction;
+        private int _nextSendEventSeq;
+        private int _nextRecvEventSeq;
+        private int _lastAckedEventSeq;
+        private readonly float _packetFillFraction;
 
-        protected UInt32 EventClassCount;
-        protected UInt32 EventClassBitSize;
-        protected UInt32 EventClassVersion;
+        protected uint EventClassCount;
+        protected uint EventClassBitSize;
+        protected uint EventClassVersion;
 
-        public UInt32 NumEventsWaiting { get; set; }
+        public uint NumEventsWaiting { get; set; }
 
         public EventConnection()
         {
@@ -230,7 +230,7 @@ namespace TNL.NET.Entities
                     stream.AdvanceBitPosition(BitStreamPosBitSize);
 
                 var classId = ev.Event.GetClassId(GetNetClassGroup());
-                stream.WriteInt(classId, (Byte) EventClassBitSize);
+                stream.WriteInt(classId, (byte) EventClassBitSize);
 
                 ev.Event.Pack(this, stream);
 
@@ -274,7 +274,7 @@ namespace TNL.NET.Entities
                 stream.WriteFlag(true);
 
                 if (!stream.WriteFlag(ev.SeqCount == prevSeq + 1))
-                    stream.WriteInt((UInt32) ev.SeqCount, 7);
+                    stream.WriteInt((uint) ev.SeqCount, 7);
 
                 prevSeq = ev.SeqCount;
 
@@ -285,7 +285,7 @@ namespace TNL.NET.Entities
 
                 var classId = ev.Event.GetClassId(GetNetClassGroup());
 
-                stream.WriteInt(classId, (Byte) EventClassBitSize);
+                stream.WriteInt(classId, (byte) EventClassBitSize);
 
                 ev.Event.Pack(this, stream);
 
@@ -352,23 +352,23 @@ namespace TNL.NET.Entities
                     if (stream.ReadFlag())
                         seq = (prevSeq + 1) & 0x7F;
                     else
-                        seq = (Int32) stream.ReadInt(7);
+                        seq = (int) stream.ReadInt(7);
 
                     prevSeq = seq;
                 }
 
-                UInt32 endingPosition = 0;
+                var endingPosition = 0U;
                 if (ConnectionParameters.DebugObjectSizes)
                     endingPosition = stream.ReadInt(BitStreamPosBitSize);
 
-                var classId = stream.ReadInt((Byte) EventClassBitSize);
+                var classId = stream.ReadInt((byte) EventClassBitSize);
                 if (classId >= EventClassCount)
                 {
                     SetLastError("Invalid packet.");
                     return;
                 }
 
-                var evt = (NetEvent) Create((UInt32) GetNetClassGroup(), (UInt32) NetClassType.NetClassTypeEvent, (Int32) classId);
+                var evt = (NetEvent) Create((uint) GetNetClassGroup(), (uint) NetClassType.NetClassTypeEvent, (int) classId);
                 if (evt == null)
                 {
                     SetLastError("Invalid packet.");
@@ -442,7 +442,7 @@ namespace TNL.NET.Entities
             }
         }
 
-        public override Boolean IsDataToTransmit()
+        public override bool IsDataToTransmit()
         {
             return _unorderedSendEventQueueHead != null || _sendEventQueueHead != null || base.IsDataToTransmit();
         }
@@ -457,28 +457,27 @@ namespace TNL.NET.Entities
         {
             base.WriteConnectRequest(stream);
 
-            stream.Write(NetClassRep.GetNetClassCount((UInt32) GetNetClassGroup(), (UInt32) NetClassType.NetClassTypeEvent));
+            stream.Write(NetClassRep.GetNetClassCount((uint) GetNetClassGroup(), (uint) NetClassType.NetClassTypeEvent));
         }
 
-        public override Boolean ReadConnectRequest(BitStream stream, ref String errorString)
+        public override bool ReadConnectRequest(BitStream stream, ref string errorString)
         {
             if (!base.ReadConnectRequest(stream, ref errorString))
                 return false;
 
-            UInt32 classCount;
-            stream.Read(out classCount);
+            stream.Read(out uint classCount);
 
-            var myCount = NetClassRep.GetNetClassCount((UInt32) GetNetClassGroup(), (UInt32) NetClassType.NetClassTypeEvent);
+            var myCount = NetClassRep.GetNetClassCount((uint) GetNetClassGroup(), (uint) NetClassType.NetClassTypeEvent);
             if (myCount <= classCount)
                 EventClassCount = myCount;
             else
             {
                 EventClassCount = classCount;
-                if (!NetClassRep.IsVersionBorderCount((UInt32) GetNetClassGroup(), (UInt32) NetClassType.NetClassTypeEvent, EventClassVersion))
+                if (!NetClassRep.IsVersionBorderCount((uint) GetNetClassGroup(), (uint) NetClassType.NetClassTypeEvent, EventClassVersion))
                     return false;
             }
 
-            EventClassVersion = (UInt32) NetClassRep.GetClass((UInt32) GetNetClassGroup(), (UInt32) NetClassType.NetClassTypeEvent, EventClassCount - 1).ClassVersion;
+            EventClassVersion = (uint) NetClassRep.GetClass((uint) GetNetClassGroup(), (uint) NetClassType.NetClassTypeEvent, EventClassCount - 1).ClassVersion;
             EventClassBitSize = Utils.GetNextBinLog2(EventClassCount);
             return true;
         }
@@ -490,30 +489,30 @@ namespace TNL.NET.Entities
             stream.Write(EventClassCount);
         }
 
-        public override bool ReadConnectAccept(BitStream stream, ref String errorString)
+        public override bool ReadConnectAccept(BitStream stream, ref string errorString)
         {
             if (!base.ReadConnectAccept(stream, ref errorString))
                 return false;
 
             stream.Read(out EventClassCount);
-            var myCount = NetClassRep.GetNetClassCount((UInt32) GetNetClassGroup(), (UInt32) NetClassType.NetClassTypeEvent);
+            var myCount = NetClassRep.GetNetClassCount((uint) GetNetClassGroup(), (uint) NetClassType.NetClassTypeEvent);
 
             if (EventClassCount > myCount)
                 return false;
 
-            if (!NetClassRep.IsVersionBorderCount((UInt32) GetNetClassGroup(), (UInt32) NetClassType.NetClassTypeEvent, EventClassCount))
+            if (!NetClassRep.IsVersionBorderCount((uint) GetNetClassGroup(), (uint) NetClassType.NetClassTypeEvent, EventClassCount))
                 return false;
 
             EventClassBitSize = Utils.GetNextBinLog2(EventClassCount);
             return true;
         }
 
-        public UInt32 GetEventClassVersion()
+        public uint GetEventClassVersion()
         {
             return EventClassVersion;
         }
 
-        public Boolean PostNetEvent(NetEvent theEvent)
+        public bool PostNetEvent(NetEvent theEvent)
         {
             var classId = theEvent.GetClassId(GetNetClassGroup());
             if (classId >= EventClassCount && GetConnectionState() == NetConnectionState.Connected)

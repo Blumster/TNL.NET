@@ -1,13 +1,11 @@
-﻿using System;
-
-namespace TNL.NET.Types
+﻿namespace TNL.Types
 {
     using Data;
     using Entities;
 
     public class NetClassRepInstance<T> : NetClassRep where T : BaseObject, new()
     {
-        public NetClassRepInstance(String className, UInt32 groupMask, NetClassType classType, Int32 classVersion)
+        public NetClassRepInstance(string className, uint groupMask, NetClassType classType, int classVersion)
         {
             ClassName = className;
             ClassType = classType;

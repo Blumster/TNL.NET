@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 
-namespace TNL.NET.Network
+namespace TNL.Network
 {
     public enum NetError
     {
@@ -15,19 +15,19 @@ namespace TNL.NET.Network
 
     public class TNLSocket
     {
-        public const UInt32 MaxPacketDataSize = 1490;
+        public const uint MaxPacketDataSize = 1490;
 
-        private Boolean _needRun;
+        private bool _needRun;
         private readonly UdpClient _socket;
 
-        public Queue<Tuple<IPEndPoint, Byte[]>> PacketsToBeHandled = new Queue<Tuple<IPEndPoint, Byte[]>>();
+        public Queue<Tuple<IPEndPoint, byte[]>> PacketsToBeHandled = new Queue<Tuple<IPEndPoint, byte[]>>();
 
         public TNLSocket()
         {
             _socket = new UdpClient();
         }
 
-        public TNLSocket(Int32 port)
+        public TNLSocket(int port)
         {
             _socket = new UdpClient(port);
             _socket.BeginReceive(OnEndReceive, null);
@@ -44,7 +44,7 @@ namespace TNL.NET.Network
                 var buff = _socket.EndReceive(result, ref ep);
 
                 if (buff != null && buff.Length > 0)
-                    PacketsToBeHandled.Enqueue(new Tuple<IPEndPoint, Byte[]>(ep, buff));
+                    PacketsToBeHandled.Enqueue(new Tuple<IPEndPoint, byte[]>(ep, buff));
             }
             catch (ObjectDisposedException)
             {
@@ -75,11 +75,11 @@ namespace TNL.NET.Network
             _needRun = false;
         }
 
-        public NetError Send(IPEndPoint iep, Byte[] buffer, UInt32 bufferSize)
+        public NetError Send(IPEndPoint iep, byte[] buffer, uint bufferSize)
         {
             try
             {
-                _socket.BeginSend(buffer, (Int32) bufferSize, iep, OnEndSend, null);
+                _socket.BeginSend(buffer, (int) bufferSize, iep, OnEndSend, null);
 
                 return NetError.NoError;
             }
