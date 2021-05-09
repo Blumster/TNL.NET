@@ -61,22 +61,22 @@
 
         public static implicit operator BitSet(uint bits)
         {
-            return new BitSet(bits);
+            return new(bits);
         }
 
         public static BitSet operator |(BitSet b, uint bits)
         {
-            return new BitSet(b.BitMask | bits);
+            return new(b.BitMask | bits);
         }
 
         public static BitSet operator &(BitSet b, uint bits)
         {
-            return new BitSet(b.BitMask & bits);
+            return new(b.BitMask & bits);
         }
 
         public static BitSet operator ^(BitSet b, uint bits)
         {
-            return new BitSet(b.BitMask ^ bits);
+            return new(b.BitMask ^ bits);
         }
     }
 }

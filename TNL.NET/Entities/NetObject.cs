@@ -23,8 +23,10 @@
     {
         private static NetObject _dirtyList;
 
+#pragma warning disable CA2211 // Non-constant fields should not be visible
         protected static GhostConnection RPCSourceConnection;
         protected static GhostConnection RPCDestConnection;
+#pragma warning restore CA2211 // Non-constant fields should not be visible
 
         private NetObject _prevDirtyList;
         private NetObject _nextDirtyList;

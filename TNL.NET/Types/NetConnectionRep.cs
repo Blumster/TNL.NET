@@ -7,7 +7,7 @@ namespace TNL.Types
 
     public class NetConnectionRep
     {
-        public static readonly List<NetConnectionRep> LinkedList = new List<NetConnectionRep>();
+        public static readonly List<NetConnectionRep> LinkedList = new();
 
         public NetClassRep ClassRep { get; private set; }
         public bool CanRemoteCreate { get; private set; }

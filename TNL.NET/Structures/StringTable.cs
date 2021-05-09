@@ -10,7 +10,7 @@ namespace TNL.Structures
         public const uint InitialNodeListSize = 2048;
         public const uint CompactThreshold = 32768;
 
-        private static readonly Dictionary<uint, string> Table = new Dictionary<uint, string>();
+        private static readonly Dictionary<uint, string> Table = new();
         private static uint _nextIndex = 1;
 
         public static uint Insert(string str, bool caseSensitive = true)

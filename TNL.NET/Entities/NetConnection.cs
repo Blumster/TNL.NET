@@ -79,7 +79,9 @@ namespace TNL.Entities
 
         #endregion Consts
 
+#pragma warning disable CA2211 // Non-constant fields should not be visible
         protected static char[] ErrorBuffer = new char[256];
+#pragma warning restore CA2211 // Non-constant fields should not be visible
 
         public static readonly string[] PacketTypeNames =
         {
@@ -425,7 +427,7 @@ namespace TNL.Entities
             var packetType = (NetPacketType) stream.ReadInt(2);
             var sequenceNumber = stream.ReadInt(5);
             /*var dataPacketFlag = */stream.ReadFlag();
-            sequenceNumber = sequenceNumber | (stream.ReadInt(SequenceNumberBitSize - 5) << 5);
+            sequenceNumber |= (stream.ReadInt(SequenceNumberBitSize - 5) << 5);
 
             var highestAck = stream.ReadInt(AckSequenceNumberBitSize);
             var padBits = stream.ReadInt(PacketHeaderPadBits);
@@ -585,7 +587,9 @@ namespace TNL.Entities
             SendPacket(stream);
         }
 
+#pragma warning disable IDE0060 // Remove unused parameter
         protected void HandleNotify(uint sequence, bool recvd)
+#pragma warning restore IDE0060 // Remove unused parameter
         {
             //Console.WriteLine("NetConnection {0}: NOTIFY {1} {2}", NetAddress, sequence, recvd ? "RECVD" : "DROPPED");
 
@@ -668,14 +672,13 @@ namespace TNL.Entities
         public bool ConnectLocal(NetInterface connectionInterface, NetInterface serverInterface)
         {
             var co = Create(GetClassName());
+            if (co is not NetConnection server)
+                return false;
+
             var client = this;
-            var server = co as NetConnection;
             string error = null;
 
             var stream = new PacketStream();
-
-            if (server == null)
-                return false;
 
             client.SetInterface(connectionInterface);
             client.ConnectionParameters.IsInitiator = true;

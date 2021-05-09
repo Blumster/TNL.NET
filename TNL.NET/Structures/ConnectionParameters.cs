@@ -39,8 +39,8 @@ namespace TNL.Structures
             DebugObjectSizes = false;
             IsLocal = false;
 
-            Nonce = new Nonce();
-            ServerNonce = new Nonce();
+            Nonce = new();
+            ServerNonce = new();
         }
     }
 }

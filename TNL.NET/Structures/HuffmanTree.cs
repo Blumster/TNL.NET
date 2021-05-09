@@ -4,7 +4,7 @@ namespace TNL.Structures
 {
     public static class HuffmanTree
     {
-        public static readonly Dictionary<byte, HuffmanTreeNode> Leaves = new Dictionary<byte, HuffmanTreeNode>(); 
+        public static readonly Dictionary<byte, HuffmanTreeNode> Leaves = new(); 
 
         public static HuffmanTreeNode Root { get; set; }
 

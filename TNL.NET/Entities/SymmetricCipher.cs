@@ -14,7 +14,7 @@ namespace TNL.Entities
         private uint[] _counter = new uint[4];
         private uint[] _initVector = new uint[16];
         private byte[] _pad = new byte[16];
-        private Key _symmetricKey = new Key();
+        private Key _symmetricKey = new();
         private uint _padLen;
 
         public SymmetricCipher(ByteBuffer theByteBuffer)
@@ -33,7 +33,9 @@ namespace TNL.Entities
 
                 Array.Copy(theByteBuffer.GetBuffer(), KeySize, _initVector, 0, BlockSize);
             }
+
             Array.Copy(_initVector, _counter, BlockSize);
+
             _padLen = 0;
         }
 
@@ -72,7 +74,6 @@ namespace TNL.Entities
                 var encryptedChar = (byte) (plainText[plainTextOffset++] ^ _pad[_padLen]);
                 _pad[_padLen++] = cipherText[cipherTextOffset++] = encryptedChar;
             }
-
         }
 
         public void Decrypt(byte[] plainText, uint plainTextOffset, byte[] cipherText, uint cipherTextOffset, uint len)
@@ -89,7 +90,6 @@ namespace TNL.Entities
                 plainText[plainTextOffset++] = (byte) (encryptedChar ^ _pad[_padLen]);
                 _pad[_padLen++] = encryptedChar;
             }
-
         }
 
         private class Key

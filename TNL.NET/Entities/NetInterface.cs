@@ -49,11 +49,11 @@ namespace TNL.Entities
         public const uint TimeoutCheckInterval = 1500;
         public const uint PuzzleSolutionTimeout = 30000;
 
-        private readonly List<NetConnection> _connectionList = new List<NetConnection>();
+        private readonly List<NetConnection> _connectionList = new();
 
-        protected readonly Dictionary<IPEndPoint, NetConnection> Connections = new Dictionary<IPEndPoint, NetConnection>();
-        protected readonly Dictionary<IPEndPoint, NetConnection> PendingConnections = new Dictionary<IPEndPoint, NetConnection>();
-        protected readonly List<DelaySendPacket> SendPacketList = new List<DelaySendPacket>();
+        protected readonly Dictionary<IPEndPoint, NetConnection> Connections = new();
+        protected readonly Dictionary<IPEndPoint, NetConnection> PendingConnections = new();
+        protected readonly List<DelaySendPacket> SendPacketList = new();
 
         protected AsymmetricKey PrivateKey { get; set; }
         protected Certificate Certificate { get; set; }
@@ -99,7 +99,6 @@ namespace TNL.Entities
             lock (_connectionList)
                 while (_connectionList.Count > 0)
                     Disconnect(_connectionList[0], TerminationReason.ReasonSelfDisconnect, "Shutdown");
-
         }
 
         public void SetPrivateKey(AsymmetricKey theKey)

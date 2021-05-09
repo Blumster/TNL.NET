@@ -83,9 +83,8 @@ namespace TNL.Entities
         {
             base.PacketDropped(note);
 
-            var notify = note as GhostPacketNotify;
-            if (notify == null)
-                throw new ArgumentException("Note must be GhostPacketNotify", "note");
+            if (note is not GhostPacketNotify notify)
+                throw new ArgumentException("Note must be GhostPacketNotify", nameof(note));
 
             var packRef = notify.GhostList;
             while (packRef != null)
@@ -130,9 +129,8 @@ namespace TNL.Entities
         {
             base.PacketReceived(note);
 
-            var notify = note as GhostPacketNotify;
-            if (notify == null)
-                throw new ArgumentException("Note must be GhostPacketNotify", "note");
+            if (note is not GhostPacketNotify notify)
+                throw new ArgumentException("Note must be GhostPacketNotify", nameof(note));
 
             var packRef = notify.GhostList;
 
@@ -181,9 +179,8 @@ namespace TNL.Entities
         {
             base.WritePacket(stream, note);
 
-            var notify = note as GhostPacketNotify;
-            if (notify == null)
-                throw new ArgumentException("Note must be GhostPacketNotify", "note");
+            if (note is not GhostPacketNotify notify)
+                throw new ArgumentException("Note must be GhostPacketNotify", nameof(note));
 
             if (ConnectionParameters.DebugObjectSizes)
                 stream.WriteInt(DebugCheckSum, 32);
@@ -386,8 +383,7 @@ namespace TNL.Entities
                             return;
                         }
 
-                        var obj = Create((uint) GetNetClassGroup(), (uint) NetClassType.NetClassTypeObject, (int) classId) as NetObject;
-                        if (obj == null)
+                        if (Create((uint)GetNetClassGroup(), (uint)NetClassType.NetClassTypeObject, (int)classId) is not NetObject obj)
                         {
                             SetLastError("Invalid packet.");
                             return;
@@ -415,8 +411,7 @@ namespace TNL.Entities
 
                         if (RemoteConnection != null)
                         {
-                            var gc = RemoteConnection as GhostConnection;
-                            if (gc == null)
+                            if (RemoteConnection is not GhostConnection gc)
                                 return;
 
                             obj.SetServerObject(gc.ResolveGhostParent((int) index));
@@ -443,8 +438,7 @@ namespace TNL.Entities
         {
             for (var walk = NotifyQueueHead; walk != null; walk = walk.NextPacket)
             {
-                var note = walk as GhostPacketNotify;
-                if (note == null)
+                if (walk is not GhostPacketNotify note)
                     throw new Exception("Note must be GhostPacketNotify");
 
                 var delWalk = note.GhostList;
@@ -798,7 +792,10 @@ namespace TNL.Entities
             }
         }
 
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable IDE0051 // Remove unused private members
         #region RPC Calls
+
         public void rpcStartGhosting(uint sequence)
         #region rpcStartGhosting
         {
@@ -807,6 +804,7 @@ namespace TNL.Entities
 
             PostNetEvent(rpcEvent);
         }
+
 
         private void rpcStartGhosting_remote(uint sequence)
         #endregion
@@ -847,7 +845,7 @@ namespace TNL.Entities
         #region rpcEndGhosting
         {
             var rpcEvent = new RPCEndGhosting();
-            rpcEvent.Functor.Set(new object[] { });
+            rpcEvent.Functor.Set(Array.Empty<object>());
 
             PostNetEvent(rpcEvent);
         }
@@ -889,10 +887,12 @@ namespace TNL.Entities
         {
             public static NetClassRepInstance<RPCEndGhosting> DynClassRep;
             public RPCEndGhosting() : base(RPCGuaranteeType.RPCGuaranteedOrdered, RPCDirection.RPCDirAny)
-            { Functor = new FunctorDecl<GhostConnection>("rpcEndGhosting_remote", new Type[] { }); }
+            { Functor = new FunctorDecl<GhostConnection>("rpcEndGhosting_remote", Array.Empty<Type>()); }
             public override bool CheckClassType(object obj) { return (obj as GhostConnection) != null; }
             public override NetClassRep GetClassRep() { return DynClassRep; }
         }
         #endregion
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore IDE0051 // Remove unused private members
     }
 }

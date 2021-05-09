@@ -33,10 +33,10 @@ namespace TNL.Structures
             LastUpdateTime = 0;
             LastTickTime = 0;
 
-            CurrentNonce = new Nonce();
+            CurrentNonce = new();
             CurrentNonce.GetRandom();
 
-            LastNonce = new Nonce();
+            LastNonce = new();
             LastNonce.GetRandom();
         }
 
@@ -81,6 +81,7 @@ namespace TNL.Structures
             var hash = new SHA256Managed().ComputeHash(buffer);
 
             var index = 0U;
+
             while (puzzleDifficulty > 8)
             {
                 if (hash[index] != 0)

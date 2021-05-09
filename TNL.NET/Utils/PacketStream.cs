@@ -16,6 +16,7 @@ namespace TNL.Utils
 
             SetMaxSizes(targetPacketSize, TNLSocket.MaxPacketDataSize);
             Reset();
+
             CurrentByte = new byte[1];
         }
 

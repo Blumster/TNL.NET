@@ -16,8 +16,7 @@
 
         public override void Pack(EventConnection ps, BitStream stream)
         {
-            var gc = ps as GhostConnection;
-            if (gc == null)
+            if (ps is not GhostConnection gc)
                 return;
 
             var ghostIndex = -1;
@@ -33,8 +32,7 @@
 
         public override void Unpack(EventConnection ps, BitStream stream)
         {
-            var gc = ps as GhostConnection;
-            if (gc == null)
+            if (ps is not GhostConnection gc)
                 return;
 
             if ((gc.DoesGhostTo() && RpcDirection == NetObjectRPCDirection.RPCToGhost) ||

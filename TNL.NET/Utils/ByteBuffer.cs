@@ -32,7 +32,9 @@ namespace TNL.Utils
         public bool Resize(uint newBufferSize)
         {
             if (BufSize >= newBufferSize)
+            {
                 BufSize = newBufferSize;
+            }
             else
             {
                 BufSize = newBufferSize;
@@ -46,6 +48,7 @@ namespace TNL.Utils
         public bool AppendBuffer(byte[] dataBuffer, uint bufferSize)
         {
             var start = BufSize;
+
             if (!Resize(BufSize + bufferSize))
                 return false;
 

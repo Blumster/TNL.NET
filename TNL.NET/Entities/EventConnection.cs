@@ -96,9 +96,8 @@ namespace TNL.Entities
         {
             base.PacketDropped(note);
 
-            var notify = note as EventPacketNotify;
-            if (notify == null)
-                throw new ArgumentException("Note must be EventPacketNotify", "note");
+            if (note is not EventPacketNotify notify)
+                throw new ArgumentException("Note must be EventPacketNotify", nameof(note));
 
             var walk = notify.EventList;
             var insertList = _sendEventQueueHead;
@@ -154,9 +153,8 @@ namespace TNL.Entities
         {
             base.PacketReceived(note);
 
-            var notify = note as EventPacketNotify;
-            if (notify == null)
-                throw new ArgumentException("Note must be EventPacketNotify", "note");
+            if (note is not EventPacketNotify notify)
+                throw new ArgumentException("Note must be EventPacketNotify", nameof(note));
 
             var walk = notify.EventList;
             var noteList = _notifyEventList;
@@ -205,9 +203,8 @@ namespace TNL.Entities
         {
             base.WritePacket(stream, note);
 
-            var notify = note as EventPacketNotify;
-            if (notify == null)
-                throw new ArgumentException("Note must be EventPacketNotify", "note");
+            if (note is not EventPacketNotify notify)
+                throw new ArgumentException("Note must be EventPacketNotify", nameof(note));
 
             if (ConnectionParameters.DebugObjectSizes)
                 stream.WriteInt(DebugCheckSum, 32);

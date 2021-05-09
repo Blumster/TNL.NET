@@ -20,7 +20,7 @@ namespace TNL.Network
         private bool _needRun;
         private readonly UdpClient _socket;
 
-        public Queue<Tuple<IPEndPoint, byte[]>> PacketsToBeHandled = new Queue<Tuple<IPEndPoint, byte[]>>();
+        public Queue<Tuple<IPEndPoint, byte[]>> PacketsToBeHandled = new();
 
         public TNLSocket()
         {
@@ -44,7 +44,7 @@ namespace TNL.Network
                 var buff = _socket.EndReceive(result, ref ep);
 
                 if (buff != null && buff.Length > 0)
-                    PacketsToBeHandled.Enqueue(new Tuple<IPEndPoint, byte[]>(ep, buff));
+                    PacketsToBeHandled.Enqueue(new(ep, buff));
             }
             catch (ObjectDisposedException)
             {

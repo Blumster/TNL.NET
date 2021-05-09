@@ -10,7 +10,7 @@ namespace TNL.Types
 
     public abstract class NetClassRep
     {
-        public static readonly List<NetClassRep> ClassList = new List<NetClassRep>();
+        public static readonly List<NetClassRep> ClassList = new();
 
         public static uint[][] NetClassBitSize { get; private set; }
         public static List<NetClassRep>[][] ClassTable { get; private set; }

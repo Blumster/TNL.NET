@@ -9,8 +9,8 @@ namespace TNL.Structures
 
     public static class ReflectedSerializer
     {
-        private static readonly Dictionary<string, Func<BitStream, Type, object>> ReadLookup = new Dictionary<string, Func<BitStream, Type, object>>();
-        private static readonly Dictionary<string, Action<BitStream, object>> WriteLookup = new Dictionary<string, Action<BitStream, object>>();
+        private static readonly Dictionary<string, Func<BitStream, Type, object>> ReadLookup = new();
+        private static readonly Dictionary<string, Action<BitStream, object>> WriteLookup = new();
 
         static ReflectedSerializer()
         {
@@ -35,6 +35,7 @@ namespace TNL.Structures
                 var ret = (IList) Activator.CreateInstance(t);
                 var size = b.ReadInt(8);
                 var memberType = t.GenericTypeArguments[0];
+
                 for (var i = 0; i < size; ++i)
                     ret.Add(ReadLookup[memberType.Name](b, memberType));
 
@@ -45,6 +46,7 @@ namespace TNL.Structures
             {
                 b.Read(out uint netNum);
                 b.Read(out ushort port);
+
                 return new IPEndPoint(netNum, port);
             });
 
@@ -52,7 +54,9 @@ namespace TNL.Structures
             {
                 var size = b.ReadInt(10);
                 var ret = new ByteBuffer(size);
+
                 b.Read(size, ret.GetBuffer());
+
                 return ret;
             });
 
@@ -77,7 +81,9 @@ namespace TNL.Structures
             {
                 var list = (IList) o;
                 var memberType = o.GetType().GenericTypeArguments[0].Name;
+
                 b.WriteInt((uint) list.Count, 8);
+
                 foreach (var t in list)
                     WriteLookup[memberType](b, t);
             });
@@ -85,6 +91,7 @@ namespace TNL.Structures
             WriteLookup.Add("IPEndPoint", (b, o) =>
             {
                 var iep = (IPEndPoint) o;
+
                 b.Write(BitConverter.ToUInt32(iep.Address.GetAddressBytes(), 0));
                 b.Write((ushort) iep.Port);
             });
@@ -92,6 +99,7 @@ namespace TNL.Structures
             WriteLookup.Add("ByteBuffer", (b, o) =>
             {
                 var bb = (ByteBuffer) o;
+
                 b.WriteInt(bb.GetBufferSize(), 10);
                 b.Write(bb.GetBufferSize(), bb.GetBuffer());
             });
