@@ -1,9 +1,8 @@
-﻿namespace TNL.Interfaces
-{
-    using Types;
+﻿namespace TNL.Interfaces;
 
-    public interface INetObject
-    {
-        NetClassRep GetClassRep();
-    }
+using TNL.Types;
+
+public interface INetObject
+{
+    NetClassRep GetClassRep();
 }

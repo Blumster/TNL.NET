@@ -1,14 +1,13 @@
-﻿namespace TNL.Notify
+﻿namespace TNL.Notify;
+
+using TNL.Entities;
+
+public class EventPacketNotify : PacketNotify
 {
-    using Entities;
+    public EventNote EventList { get; set; }
 
-    public class EventPacketNotify : PacketNotify
+    public EventPacketNotify()
     {
-        public EventNote EventList { get; set; }
-
-        public EventPacketNotify()
-        {
-            EventList = null;
-        }
+        EventList = null;
     }
 }

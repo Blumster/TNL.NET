@@ -1,11 +1,10 @@
-﻿namespace TNL.Data
+﻿namespace TNL.Data;
+
+public enum NetClassType
 {
-    public enum NetClassType
-    {
-        NetClassTypeNone = -1,
-        NetClassTypeObject = 0,
-        NetClassTypeDataBlock,
-        NetClassTypeEvent,
-        NetClassTypeCount,
-    }
+    NetClassTypeNone = -1,
+    NetClassTypeObject = 0,
+    NetClassTypeDataBlock,
+    NetClassTypeEvent,
+    NetClassTypeCount,
 }

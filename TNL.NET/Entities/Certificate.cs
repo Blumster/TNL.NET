@@ -1,99 +1,98 @@
-﻿namespace TNL.Entities
+﻿namespace TNL.Entities;
+
+using TNL.Utils;
+
+public class Certificate : ByteBuffer
 {
-    using Utils;
+    public const uint MaxPayloadSize = 512;
 
-    public class Certificate : ByteBuffer
+    protected AsymmetricKey PublicKey { get; set; }
+    protected ByteBuffer PayLoad { get; set; }
+    protected ByteBuffer Signature { get; set; }
+    protected bool PIsValid { get; set; }
+    protected uint SignatureByteSize { get; set; }
+
+    public Certificate(byte[] data, uint dataSize)
+        : base(data, dataSize)
     {
-        public const uint MaxPayloadSize = 512;
+        SignatureByteSize = 0;
+        PIsValid = false;
 
-        protected AsymmetricKey PublicKey { get; set; }
-        protected ByteBuffer PayLoad { get; set; }
-        protected ByteBuffer Signature { get; set; }
-        protected bool PIsValid { get; set; }
-        protected uint SignatureByteSize { get; set; }
+        Parse();
+    }
 
-        public Certificate(byte[] data, uint dataSize)
-            : base(data, dataSize)
-        {
-            SignatureByteSize = 0;
-            PIsValid = false;
+    public Certificate(BitStream stream)
+    {
+        SignatureByteSize = 0;
+        PIsValid = false;
 
-            Parse();
-        }
+        stream.Read(this);
 
-        public Certificate(BitStream stream)
-        {
-            SignatureByteSize = 0;
-            PIsValid = false;
+        Parse();
+    }
 
-            stream.Read(this);
+    public Certificate(ByteBuffer payload, AsymmetricKey publicKey, AsymmetricKey theCAPrivateKey)
+    {
+        PIsValid = false;
+        SignatureByteSize = 0;
 
-            Parse();
-        }
+        if (payload.GetBufferSize() > MaxPayloadSize || !publicKey.IsValid())
+            return;
 
-        public Certificate(ByteBuffer payload, AsymmetricKey publicKey, AsymmetricKey theCAPrivateKey)
-        {
-            PIsValid = false;
-            SignatureByteSize = 0;
+        var thePublicKey = PublicKey.GetPublicKey();
+        var packet = new PacketStream();
 
-            if (payload.GetBufferSize() > MaxPayloadSize || !publicKey.IsValid())
-                return;
+        packet.Write(payload);
+        packet.Write(thePublicKey);
 
-            var thePublicKey = PublicKey.GetPublicKey();
-            var packet = new PacketStream();
+        SignatureByteSize = packet.GetBytePosition();
+        packet.SetBytePosition(SignatureByteSize);
 
-            packet.Write(payload);
-            packet.Write(thePublicKey);
+        var theSignedBytes = new ByteBuffer(packet.GetBuffer(), packet.GetBytePosition());
 
-            SignatureByteSize = packet.GetBytePosition();
-            packet.SetBytePosition(SignatureByteSize);
+        Signature = theCAPrivateKey.HashAndSign(theSignedBytes);
+        packet.Write(Signature);
 
-            var theSignedBytes = new ByteBuffer(packet.GetBuffer(), packet.GetBytePosition());
+        SetBuffer(packet.GetBuffer(), packet.GetBytePosition());
+    }
 
-            Signature = theCAPrivateKey.HashAndSign(theSignedBytes);
-            packet.Write(Signature);
+    public void Parse()
+    {
+        var aStream = new BitStream(GetBuffer(), GetBufferSize());
 
-            SetBuffer(packet.GetBuffer(), packet.GetBytePosition());
-        }
+        PayLoad = new ByteBuffer(0U);
+        aStream.Read(PayLoad);
 
-        public void Parse()
-        {
-            var aStream = new BitStream(GetBuffer(), GetBufferSize());
+        PublicKey = new AsymmetricKey(aStream);
+        Signature = new ByteBuffer(0U);
 
-            PayLoad = new ByteBuffer(0U);
-            aStream.Read(PayLoad);
+        SignatureByteSize = aStream.GetBytePosition();
 
-            PublicKey = new AsymmetricKey(aStream);
-            Signature = new ByteBuffer(0U);
+        aStream.SetBytePosition(SignatureByteSize);
 
-            SignatureByteSize = aStream.GetBytePosition();
+        aStream.Read(Signature);
 
-            aStream.SetBytePosition(SignatureByteSize);
+        if (aStream.IsValid() && GetBufferSize() == aStream.GetBytePosition() && PublicKey.IsValid())
+            PIsValid = true;
+    }
 
-            aStream.Read(Signature);
+    public bool IsValid()
+    {
+        return PIsValid;
+    }
 
-            if (aStream.IsValid() && GetBufferSize() == aStream.GetBytePosition() && PublicKey.IsValid())
-                PIsValid = true;
-        }
+    public bool Validate(AsymmetricKey signatoryPublicKey)
+    {
+        return PIsValid && signatoryPublicKey.VerifySignature(new ByteBuffer(GetBuffer(), SignatureByteSize), Signature);
+    }
 
-        public bool IsValid()
-        {
-            return PIsValid;
-        }
+    public AsymmetricKey GetPublicKey()
+    {
+        return PublicKey;
+    }
 
-        public bool Validate(AsymmetricKey signatoryPublicKey)
-        {
-            return PIsValid && signatoryPublicKey.VerifySignature(new ByteBuffer(GetBuffer(), SignatureByteSize), Signature);
-        }
-
-        public AsymmetricKey GetPublicKey()
-        {
-            return PublicKey;
-        }
-
-        public ByteBuffer GetPayload()
-        {
-            return PayLoad;
-        }
+    public ByteBuffer GetPayload()
+    {
+        return PayLoad;
     }
 }

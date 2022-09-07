@@ -1,47 +1,46 @@
-﻿namespace TNL.Entities
+﻿namespace TNL.Entities;
+
+using TNL.Interfaces;
+using TNL.Utils;
+
+public enum RPCDirection
 {
-    using Interfaces;
-    using Utils;
+    RPCDirAny = 1,
+    RPCDirServerToClient = 2,
+    RPCDirClientToServer = 3
+}
 
-    public enum RPCDirection
+public enum RPCGuaranteeType
+{
+    RPCGuaranteedOrdered = 0,
+    RPCGuaranteed = 1,
+    RPCUnguaranteed = 2
+}
+
+public abstract class RPCEvent : NetEvent
+{
+    public IFunctor Functor { get; set; }
+
+    protected RPCEvent(RPCGuaranteeType gType, RPCDirection dir)
+        : base((GuaranteeType)gType, (EventDirection)dir)
     {
-        RPCDirAny = 1,
-        RPCDirServerToClient = 2,
-        RPCDirClientToServer = 3
     }
 
-    public enum RPCGuaranteeType
+    public override void Pack(EventConnection ps, BitStream stream)
     {
-        RPCGuaranteedOrdered = 0,
-        RPCGuaranteed = 1,
-        RPCUnguaranteed = 2
+        Functor.Write(stream);
     }
 
-    public abstract class RPCEvent : NetEvent
+    public override void Unpack(EventConnection ps, BitStream stream)
     {
-        public IFunctor Functor { get; set; }
+        Functor.Read(stream);
+    }
 
-        protected RPCEvent(RPCGuaranteeType gType, RPCDirection dir)
-            : base((GuaranteeType)gType, (EventDirection)dir)
-        {
-        }
+    public abstract bool CheckClassType(object obj);
 
-        public override void Pack(EventConnection ps, BitStream stream)
-        {
-            Functor.Write(stream);
-        }
-
-        public override void Unpack(EventConnection ps, BitStream stream)
-        {
-            Functor.Read(stream);
-        }
-
-        public abstract bool CheckClassType(object obj);
-
-        public override void Process(EventConnection ps)
-        {
-            if (CheckClassType(ps))
-                Functor.Dispatch(ps);
-        }
+    public override void Process(EventConnection ps)
+    {
+        if (CheckClassType(ps))
+            Functor.Dispatch(ps);
     }
 }

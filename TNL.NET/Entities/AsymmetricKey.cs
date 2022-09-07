@@ -1,123 +1,121 @@
-﻿using System;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 
-namespace TNL.Entities
+namespace TNL.Entities;
+
+using TNL.Utils;
+
+public enum KeyType
 {
-    using Utils;
+    KeyTypePrivate,
+    KeyTypePublic
+}
 
-    public enum KeyType
+public class AsymmetricKey : ByteBuffer
+{
+    public const uint StaticCryptoBufferSize = 2048U;
+
+    private static readonly byte[] StaticCryptoBuffer = new byte[StaticCryptoBufferSize];
+
+    private byte[] KeyData { get; set; }
+    private uint KeySize { get; set; }
+    private bool PHasPrivateKey { get; set; }
+    private ByteBuffer PublicKey { get; set; }
+    private ByteBuffer PrivateKey { get; set; }
+    private bool PIsValid { get; set; }
+
+    public AsymmetricKey(byte[] buffer, uint bufferSize)
     {
-        KeyTypePrivate,
-        KeyTypePublic
+        Load(new ByteBuffer(buffer, bufferSize));
     }
 
-    public class AsymmetricKey : ByteBuffer
+    public AsymmetricKey(BitStream stream)
     {
-        public const uint StaticCryptoBufferSize = 2048U;
+        var theBuffer = new ByteBuffer();
 
-        private static readonly byte[] StaticCryptoBuffer = new byte[StaticCryptoBufferSize];
+        stream.Read(theBuffer);
 
-        private byte[] KeyData { get; set; }
-        private uint KeySize { get; set; }
-        private bool PHasPrivateKey { get; set; }
-        private ByteBuffer PublicKey { get; set; }
-        private ByteBuffer PrivateKey { get; set; }
-        private bool PIsValid { get; set; }
+        Load(theBuffer);
+    }
 
-        public AsymmetricKey(byte[] buffer, uint bufferSize)
-        {
-            Load(new ByteBuffer(buffer, bufferSize));
-        }
+    public AsymmetricKey(uint keySize)
+    {
+        PIsValid = false;
 
-        public AsymmetricKey(BitStream stream)
-        {
-            var theBuffer = new ByteBuffer();
+        KeySize = keySize;
 
-            stream.Read(theBuffer);
+        throw new NotImplementedException();
+    }
 
-            Load(theBuffer);
-        }
+    private void Load(ByteBuffer theBuffer)
+    {
+        PIsValid = false;
+        PHasPrivateKey = theBuffer.GetBuffer()[0] == (byte) KeyType.KeyTypePrivate;
 
-        public AsymmetricKey(uint keySize)
-        {
-            PIsValid = false;
+        var bufferSize = theBuffer.GetBufferSize();
+        if (bufferSize < 5)
+            return;
 
-            KeySize = keySize;
+        var temp = new byte[4];
+        Array.Copy(theBuffer.GetBuffer(), 1, temp, 0, 4);
+        Array.Reverse(temp);
 
-            throw new NotImplementedException();
-        }
+        KeySize = BitConverter.ToUInt32(temp, 0);
 
-        private void Load(ByteBuffer theBuffer)
-        {
-            PIsValid = false;
-            PHasPrivateKey = theBuffer.GetBuffer()[0] == (byte) KeyType.KeyTypePrivate;
+        throw new NotImplementedException();
+    }
 
-            var bufferSize = theBuffer.GetBufferSize();
-            if (bufferSize < 5)
-                return;
+    public ByteBuffer GetPublicKey()
+    {
+        return PublicKey;
+    }
 
-            var temp = new byte[4];
-            Array.Copy(theBuffer.GetBuffer(), 1, temp, 0, 4);
-            Array.Reverse(temp);
+    public ByteBuffer GetPrivateKey()
+    {
+        return PrivateKey;
+    }
 
-            KeySize = BitConverter.ToUInt32(temp, 0);
+    public bool HasPrivateKey()
+    {
+        return PHasPrivateKey;
+    }
 
-            throw new NotImplementedException();
-        }
+    public bool IsValid()
+    {
+        return PIsValid;
+    }
 
-        public ByteBuffer GetPublicKey()
-        {
-            return PublicKey;
-        }
+    public ByteBuffer ComputeSharedSecretKey(AsymmetricKey publicKey)
+    {
+        if (publicKey.GetKeySize() != GetKeySize() || !PHasPrivateKey)
+            return null;
 
-        public ByteBuffer GetPrivateKey()
-        {
-            return PrivateKey;
-        }
+        throw new NotImplementedException();
 
-        public bool HasPrivateKey()
-        {
-            return PHasPrivateKey;
-        }
+        var hash = SHA256.Create().ComputeHash(StaticCryptoBuffer, 0, (int) StaticCryptoBufferSize);
 
-        public bool IsValid()
-        {
-            return PIsValid;
-        }
+        return new ByteBuffer(hash, 32);
+    }
 
-        public ByteBuffer ComputeSharedSecretKey(AsymmetricKey publicKey)
-        {
-            if (publicKey.GetKeySize() != GetKeySize() || !PHasPrivateKey)
-                return null;
+    public uint GetKeySize()
+    {
+        return KeySize;
+    }
 
-            throw new NotImplementedException();
+    public ByteBuffer HashAndSign(ByteBuffer theByteBuffer)
+    {
+        throw new NotImplementedException();
 
-            var hash = new SHA256Managed().ComputeHash(StaticCryptoBuffer, 0, (int) StaticCryptoBufferSize);
+        var hash = SHA256.Create().ComputeHash(theByteBuffer.GetBuffer(), 0, (int) theByteBuffer.GetBufferSize());
 
-            return new ByteBuffer(hash, 32);
-        }
+        return new ByteBuffer(StaticCryptoBuffer, StaticCryptoBufferSize);
+    }
 
-        public uint GetKeySize()
-        {
-            return KeySize;
-        }
+    public bool VerifySignature(ByteBuffer theByteBuffer, ByteBuffer theSignature)
+    {
+        throw new NotImplementedException();
 
-        public ByteBuffer HashAndSign(ByteBuffer theByteBuffer)
-        {
-            throw new NotImplementedException();
+        var hash = SHA256.Create().ComputeHash(theByteBuffer.GetBuffer(), 0, (int) theByteBuffer.GetBufferSize());
 
-            var hash = new SHA256Managed().ComputeHash(theByteBuffer.GetBuffer(), 0, (int) theByteBuffer.GetBufferSize());
-
-            return new ByteBuffer(StaticCryptoBuffer, StaticCryptoBufferSize);
-        }
-
-        public bool VerifySignature(ByteBuffer theByteBuffer, ByteBuffer theSignature)
-        {
-            throw new NotImplementedException();
-
-            var hash = new SHA256Managed().ComputeHash(theByteBuffer.GetBuffer(), 0, (int) theByteBuffer.GetBufferSize());
-
-            return false;
-        }
+        return false;
     }
 }

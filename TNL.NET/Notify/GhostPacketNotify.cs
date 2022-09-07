@@ -1,14 +1,13 @@
-﻿namespace TNL.Notify
+﻿namespace TNL.Notify;
+
+using TNL.Entities;
+
+public class GhostPacketNotify : EventPacketNotify
 {
-    using Entities;
+    public GhostRef GhostList { get; set; }
 
-    public class GhostPacketNotify : EventPacketNotify
+    public GhostPacketNotify()
     {
-        public GhostRef GhostList { get; set; }
-
-        public GhostPacketNotify()
-        {
-            GhostList = null;
-        }
+        GhostList = null;
     }
 }

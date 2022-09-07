@@ -1,51 +1,49 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 
-namespace TNL.Utils
+namespace TNL.Utils;
+
+using TNL.Network;
+
+public class PacketStream : BitStream
 {
-    using Network;
+    private readonly byte[] _buffer = new byte[TNLSocket.MaxPacketDataSize];
 
-    public class PacketStream : BitStream
+    public PacketStream(uint targetPacketSize = TNLSocket.MaxPacketDataSize)
     {
-        private readonly byte[] _buffer = new byte[TNLSocket.MaxPacketDataSize];
+        BufSize = targetPacketSize;
+        Data = _buffer;
 
-        public PacketStream(uint targetPacketSize = TNLSocket.MaxPacketDataSize)
+        SetMaxSizes(targetPacketSize, TNLSocket.MaxPacketDataSize);
+        Reset();
+
+        CurrentByte = new byte[1];
+    }
+
+    public NetError SendTo(TNLSocket outgoingSocket, IPEndPoint theAddress)
+    {
+        return outgoingSocket.Send(theAddress, _buffer, GetBytePosition());
+    }
+
+    public NetError RecvFrom(TNLSocket incomingSocket, out IPEndPoint recvAddress)
+    {
+        if (incomingSocket.PacketsToBeHandled.Count == 0)
         {
-            BufSize = targetPacketSize;
-            Data = _buffer;
-
-            SetMaxSizes(targetPacketSize, TNLSocket.MaxPacketDataSize);
-            Reset();
-
-            CurrentByte = new byte[1];
+            recvAddress = null;
+            return NetError.WouldBlock;
         }
 
-        public NetError SendTo(TNLSocket outgoingSocket, IPEndPoint theAddress)
-        {
-            return outgoingSocket.Send(theAddress, _buffer, GetBytePosition());
-        }
+        var d = incomingSocket.PacketsToBeHandled.Dequeue();
 
-        public NetError RecvFrom(TNLSocket incomingSocket, out IPEndPoint recvAddress)
-        {
-            if (incomingSocket.PacketsToBeHandled.Count == 0)
-            {
-                recvAddress = null;
-                return NetError.WouldBlock;
-            }
+        var dataSize = d.Item2.Length > TNLSocket.MaxPacketDataSize ? TNLSocket.MaxPacketDataSize : (uint) d.Item2.Length;
 
-            var d = incomingSocket.PacketsToBeHandled.Dequeue();
+        Array.Copy(d.Item2, _buffer, dataSize);
 
-            var dataSize = d.Item2.Length > TNLSocket.MaxPacketDataSize ? TNLSocket.MaxPacketDataSize : (uint) d.Item2.Length;
+        SetBuffer(_buffer, dataSize);
+        SetMaxSizes(dataSize, 0U);
+        Reset();
 
-            Array.Copy(d.Item2, _buffer, dataSize);
+        recvAddress = d.Item1;
 
-            SetBuffer(_buffer, dataSize);
-            SetMaxSizes(dataSize, 0U);
-            Reset();
-
-            recvAddress = d.Item1;
-
-            return NetError.NoError;
-        }
+        return NetError.NoError;
     }
 }

@@ -1,18 +1,17 @@
-﻿namespace TNL.Notify
+﻿namespace TNL.Notify;
+
+using TNL.Structures;
+
+public class PacketNotify
 {
-    using Structures;
+    public bool RateChanged { get; set; }
+    public int SendTime { get; set; }
+    public ConnectionStringTable.PacketList StringList { get; set; }
+    public PacketNotify NextPacket { get; set; }
 
-    public class PacketNotify
+    public PacketNotify()
     {
-        public bool RateChanged { get; set; }
-        public int SendTime { get; set; }
-        public ConnectionStringTable.PacketList StringList { get; set; }
-        public PacketNotify NextPacket { get; set; }
-
-        public PacketNotify()
-        {
-            RateChanged = false;
-            SendTime = 0;
-        }
+        RateChanged = false;
+        SendTime = 0;
     }
 }
