@@ -26,13 +26,17 @@ public class PacketStream : BitStream
 
     public NetError RecvFrom(TNLSocket incomingSocket, out IPEndPoint recvAddress)
     {
-        if (incomingSocket.PacketsToBeHandled.Count == 0)
-        {
-            recvAddress = null;
-            return NetError.WouldBlock;
-        }
+        Tuple<IPEndPoint, byte[]> d;
 
-        var d = incomingSocket.PacketsToBeHandled.Dequeue();
+        lock (incomingSocket._lock)
+        {
+            if (incomingSocket.PacketsToBeHandled.Count == 0)
+            {
+                recvAddress = null;
+                return NetError.WouldBlock;
+            }
+            d = incomingSocket.PacketsToBeHandled.Dequeue();
+        }
 
         var dataSize = d.Item2.Length > TNLSocket.MaxPacketDataSize ? TNLSocket.MaxPacketDataSize : (uint) d.Item2.Length;
 
