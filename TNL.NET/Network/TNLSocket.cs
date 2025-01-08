@@ -18,6 +18,7 @@ public class TNLSocket
     private bool _needRun;
     private readonly UdpClient _socket;
 
+    public object _lock = new object();
     public Queue<Tuple<IPEndPoint, byte[]>> PacketsToBeHandled = new();
 
     public TNLSocket()
@@ -42,7 +43,8 @@ public class TNLSocket
             var buff = _socket.EndReceive(result, ref ep);
 
             if (buff != null && buff.Length > 0)
-                PacketsToBeHandled.Enqueue(new(ep, buff));
+                lock(_lock)
+                    PacketsToBeHandled.Enqueue(new(ep, buff));
         }
         catch (ObjectDisposedException)
         {
